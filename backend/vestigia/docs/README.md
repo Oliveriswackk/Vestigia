@@ -30,19 +30,25 @@ psql -h localhost -U postgres -d postgres -f docs/02-provisioning/00_create_data
 psql -h localhost -U postgres -d vestigia -f docs/02-provisioning/01_schema.sql
 psql -h localhost -U postgres -d vestigia -f docs/02-provisioning/02_seed.sql
 
-# 2. Credenciales por variables de entorno (no se guardan en el repo)
-export DB_URL=jdbc:postgresql://localhost:5432/vestigia
-export DB_USER=postgres
-export DB_PASSWORD='tu-contraseña'
+# 2. Credenciales locales (una sola vez; el archivo está en .gitignore)
+cp application-local.properties.example application-local.properties
+#    y edita la contraseña en application-local.properties
 
 # 3. Arrancar
 ./mvnw spring-boot:run
 ```
 
-En Windows (PowerShell): `$env:DB_PASSWORD="tu-contraseña"` y `.\mvnw.cmd spring-boot:run`.
+### Credenciales de la base de datos
 
-Si no se definen las variables, se usan los valores de desarrollo de
-`application.properties` (`postgres`/`postgres` en `localhost:5432/vestigia`).
+El backend toma las credenciales en este orden de prioridad:
+
+1. Variables de entorno `DB_URL`, `DB_USER`, `DB_PASSWORD`
+   (p. ej. `DB_PASSWORD='tu-contraseña' ./mvnw spring-boot:run`).
+2. `application-local.properties` en `backend/vestigia/` (no se sube al repo).
+3. Valores por defecto de `application.properties` (`postgres`/`postgres` en `localhost:5432/vestigia`).
+
+El archivo local se busca en el directorio desde donde se ejecuta el backend,
+así que hay que arrancarlo desde `backend/vestigia`.
 
 ## URLs
 

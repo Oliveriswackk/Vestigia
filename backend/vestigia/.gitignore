@@ -34,3 +34,6 @@ build/
 
 ### Logs del servidor ###
 logs/
+
+### Credenciales locales ###
+application-local.properties
