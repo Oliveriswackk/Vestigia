@@ -44,7 +44,7 @@ Entrega por equipo para el **14 de octubre de 2026**. Este backend lo desarrolla
 - El esquema lo crean los scripts de `docs/02-provisioning/`; Hibernate solo lo valida (`spring.jpa.hibernate.ddl-auto=validate`). JSON en snake_case (`spring.jackson.property-naming-strategy=SNAKE_CASE`).
 - Spring Boot Actuator expone `health` y `metrics`.
 - CORS para la PWA: `http://localhost:5173` (Vite dev) y `http://localhost:4173` (preview), configurable con `app.cors.allowed-origins`.
-- Credenciales de BD por variables de entorno `DB_URL`, `DB_USER`, `DB_PASSWORD`. Los valores por defecto de `application.properties` son solo de desarrollo local. Las contraseñas reales **nunca** van en el repo ni en este archivo.
+- Credenciales de BD, por prioridad: variables de entorno `DB_URL`, `DB_USER`, `DB_PASSWORD`; luego `application-local.properties` (importado como opcional, ignorado por git; plantilla en `application-local.properties.example`); luego los valores por defecto de `application.properties`, solo de desarrollo. Las contraseñas reales **nunca** van en el repo ni en este archivo.
 - Logs: consola y `logs/vestigia-backend.log` (ignorado por git), con SQL de Hibernate y una línea `[API]` por petición (ver `RequestLoggingFilter`).
 
 ## 4. Repositorios
