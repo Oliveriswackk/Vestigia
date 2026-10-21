@@ -1,0 +1,33 @@
+# 3ds Max Wavefront OBJ Exporter v0.97b - (c)2007 guruware
+# File Created: 24.11.2015 17:33:29
+
+newmtl Converted_LightBlend
+	Ns 10.000000
+	Ni 1.500000
+	d 1.000000
+	Tr 0.000000
+	Tf 1.000000 1.000000 1.000000 
+	illum 2
+	Ka 0.588000 0.588000 0.588000
+	Kd 0.874510 0.003922 0.003922
+	Ks 0.000000 0.000000 0.000000
+	Ke 0.000000 0.000000 0.000000
+	map_Ka maps\REd_Diffuse.png
+	map_Kd maps\REd_Diffuse.png
+	map_bump maps\REd_Bump.png
+	bump maps\REd_Bump.png
+	map_refl maps\Mix_Mix.png
+
+newmtl Converted_LightStainless_Steel
+	Ns 10.000000
+	Ni 1.500000
+	d 1.000000
+	Tr 0.000000
+	Tf 1.000000 1.000000 1.000000 
+	illum 2
+	Ka 0.588000 0.588000 0.588000
+	Kd 0.015686 0.015686 0.015686
+	Ks 0.000000 0.000000 0.000000
+	Ke 0.000000 0.000000 0.000000
+	map_bump -bm 0.300000 maps\Map__0_Noise.png
+	map_refl maps\Mix_Mix.png

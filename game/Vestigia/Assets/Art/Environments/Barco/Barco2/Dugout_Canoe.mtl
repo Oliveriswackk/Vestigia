@@ -1,0 +1,75 @@
+# 3ds Max Wavefront OBJ Exporter v0.94b - (c)2007 guruware
+# File Created: 14.06.2012 01:54:05
+
+newmtl wire_028089177
+	Ns 32
+	d 1
+	Tr 1
+	Tf 1 1 1
+	illum 2
+	Ka 0.0000 0.0000 0.0000
+	Kd 0.1098 0.3490 0.6941
+	Ks 0.3500 0.3500 0.3500
+
+newmtl wood_beam1
+	Ns 10.0000
+	Ni 1.5000
+	d 1.0000
+	Tr 1.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 0.0000 0.0000 0.0000
+	Kd 0.5882 0.5882 0.5882
+	Ks 0.0000 0.0000 0.0000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka D:\3D Stuff\textures\wood\Normal\woodplank_diffuse.jpg
+	map_Kd D:\3D Stuff\textures\wood\Normal\woodplank_diffuse.jpg
+	map_bump D:\3D Stuff\textures\wood\Normal\woodplank_bump.jpg
+	bump D:\3D Stuff\textures\wood\Normal\woodplank_bump.jpg
+
+newmtl wood_beam2
+	Ns 10.0000
+	Ni 1.5000
+	d 1.0000
+	Tr 1.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 0.0000 0.0000 0.0000
+	Kd 0.5882 0.5882 0.5882
+	Ks 0.0000 0.0000 0.0000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka D:\3D Stuff\textures\wood\Normal\woodplank_diffuse2.jpg
+	map_Kd D:\3D Stuff\textures\wood\Normal\woodplank_diffuse2.jpg
+	map_bump D:\3D Stuff\textures\wood\Normal\woodplank_bump2.jpg
+	bump D:\3D Stuff\textures\wood\Normal\woodplank_bump2.jpg
+
+newmtl rope
+	Ns 10.0000
+	Ni 1.5000
+	d 1.0000
+	Tr 1.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 0.0000 0.0000 0.0000
+	Kd 0.5882 0.5882 0.5882
+	Ks 0.0000 0.0000 0.0000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka D:\3D Stuff\rope_diff2.jpg
+	map_Kd D:\3D Stuff\rope_diff2.jpg
+	map_bump -bm 0.3000 Map__1_Normal Bump.tga
+
+newmtl wood_beam3
+	Ns 10.0000
+	Ni 1.5000
+	d 1.0000
+	Tr 1.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 0.0000 0.0000 0.0000
+	Kd 0.5882 0.5882 0.5882
+	Ks 0.0000 0.0000 0.0000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka D:\3D Stuff\textures\wood\Normal\woodplank3_diffuse.jpg
+	map_Kd D:\3D Stuff\textures\wood\Normal\woodplank3_diffuse.jpg
+	map_bump D:\3D Stuff\textures\wood\Normal\woodplank3_bump.jpg
+	bump D:\3D Stuff\textures\wood\Normal\woodplank3_bump.jpg
