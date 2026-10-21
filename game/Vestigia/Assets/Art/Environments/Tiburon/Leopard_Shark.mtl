@@ -1,0 +1,22 @@
+# 
+# Wavefront material file
+# Converted by the DEEP Exploration  Deep Exploration 6.5 x64 6.5.0.9182
+# Right Hemisphere, LTD
+# http://www.righthemisphere.com/
+# 
+
+newmtl leopard_shark
+Ka 0.5 0.5 0.5
+Kd 1 1 1
+Ks 1 1 1
+illum 2
+Ns 64
+map_Kd leopard_shark_diffuse.jpg
+map_bump leopard_shark_normal.jpg
+bump leopard_shark_normal.jpg
+map_opacity 
+map_d 
+refl 
+map_kS leopard_shark_glos.jpg
+map_kA 
+map_Ns 
