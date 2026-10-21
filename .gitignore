@@ -95,3 +95,22 @@ firebase-debug.log
 *.tmp
 *.temp
 *.log
+
+
+# Paquetes externos de Unity
+game/Vestigia/Assets/AureDevGames/
+game/Vestigia/Assets/AureDevGames.meta
+game/Vestigia/Assets/Space Skybox/
+game/Vestigia/Assets/Space Skybox.meta
+
+# Copia de seguridad temporal del repositorio interno
+game/Vestigia/.git-backup/
+
+game/Vestigia/Assets/Art/Environments/Lobster/
+game/Vestigia/Assets/Art/Environments/Lobster.meta
+game/Vestigia/Assets/Textures/Estatica/01.jpg
+game/Vestigia/Assets/Textures/Estatica/01.jpg.meta
+game/Vestigia/Assets/Textures/Estatica/04.jpg
+game/Vestigia/Assets/Textures/Estatica/04.jpg.meta
+game/Vestigia/Assets/Textures/Estatica/06.jpg
+game/Vestigia/Assets/Textures/Estatica/06.jpg.meta
