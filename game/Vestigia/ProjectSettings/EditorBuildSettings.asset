@@ -6,10 +6,28 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
+    path: Assets/Scenes/Menu_Inicio.unity
+    guid: dd224a2b0bc8948ae862c01c58dc83d1
+  - enabled: 1
+    path: Assets/Scenes/Salas.unity
+    guid: c739f36e76e8846debfe806534351115
+  - enabled: 1
+    path: Assets/Scenes/Escena1_Intro.unity
+    guid: db8bcd872d05d40a7b5982eb04a0b6d2
+  - enabled: 1
     path: Assets/Scenes/Escena2_Pueblo.unity
     guid: 99c9720ab356a0642a771bea13969a05
   - enabled: 1
     path: Assets/Scenes/Escena3_Faro.unity
     guid: 9832f900b2e004808b0280888d824209
+  - enabled: 1
+    path: Assets/Scenes/Escena3.1_PrimerPiso.unity
+    guid: 2631865109d0b4aaf824860a54ade793
+  - enabled: 1
+    path: Assets/Scenes/Escena3.2_SegundoPiso.unity
+    guid: 3a88f92cc87b349b6b1bf59952c922f6
+  - enabled: 1
+    path: Assets/Scenes/Escena3.3_TercerPiso.unity
+    guid: e70030c8a29b44d17afe4be730b586e1
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
