@@ -1,6 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- Vibraciones de la perilla y de las señales (lib/core/haptics.dart). -->
     <uses-permission android:name="android.permission.VIBRATE"/>
+    <!-- Conexión con la sala del juego (lib/core/room/). -->
+    <uses-permission android:name="android.permission.INTERNET"/>
     <application
         android:label="Vestigia"
         android:name="${applicationName}"
