@@ -1,13 +1,23 @@
 import 'package:flutter/material.dart';
 
+import '../core/room/room_connection.dart';
 import '../puzzles/lookout/lookout_screen.dart';
 import '../puzzles/observatory/observatory_screen.dart';
 import '../puzzles/photo/photo_puzzle_screen.dart';
 import '../puzzles/radio/radio_puzzle_screen.dart';
+import '../room/room_screen.dart';
 import 'puzzle_entry.dart';
 
-/// Puzzles disponibles en el menú, en el orden en que se muestran.
-List<PuzzleEntry> defaultPuzzleCatalog() => [
+/// Entradas del menú en el orden en que se muestran: primero la conexión con
+/// la sala del juego y después los puzzles.
+List<PuzzleEntry> defaultPuzzleCatalog({required RoomConnection room}) => [
+  PuzzleEntry(
+    id: 'room',
+    title: 'Sala',
+    description: 'Únete a la partida del juego en la PC.',
+    icon: Icons.sensors,
+    builder: (_) => RoomScreen(connection: room),
+  ),
   PuzzleEntry(
     id: 'radio',
     title: 'Radio',

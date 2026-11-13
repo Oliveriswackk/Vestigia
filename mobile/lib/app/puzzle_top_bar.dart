@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 
 import 'vestigia_theme.dart';
 
-/// Barra común de los puzzles: volver al menú, título y nueva partida.
+/// Barra común de los puzzles: volver al menú, título y nueva partida
+/// (o la acción equivalente de la pantalla, como salir de la sala).
 class PuzzleTopBar extends StatelessWidget {
   const PuzzleTopBar({
     super.key,
@@ -10,12 +11,16 @@ class PuzzleTopBar extends StatelessWidget {
     required this.onBack,
     required this.onRestart,
     this.restartKey,
+    this.restartTooltip = 'Nueva partida',
+    this.restartIcon = Icons.refresh,
   });
 
   final String title;
   final VoidCallback onBack;
   final VoidCallback onRestart;
   final Key? restartKey;
+  final String restartTooltip;
+  final IconData restartIcon;
 
   @override
   Widget build(BuildContext context) {
@@ -41,8 +46,8 @@ class PuzzleTopBar extends StatelessWidget {
           ),
           IconButton(
             key: restartKey,
-            icon: const Icon(Icons.refresh),
-            tooltip: 'Nueva partida',
+            icon: Icon(restartIcon),
+            tooltip: restartTooltip,
             onPressed: onRestart,
           ),
         ],
