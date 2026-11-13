@@ -1,0 +1,14 @@
+# Blender 3.3.1 MTL File: 'Tool Box.blend'
+# www.blender.org
+
+newmtl Tool_Box.002
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd /Volumes/Main 4TB/Business/Digital Products/Assets/Tool Box/Exports/Textures/Tool Box Red 4K/Tool Box_Tool Box_BaseColor.png
+map_Ns /Volumes/Main 4TB/Business/Digital Products/Assets/Tool Box/Exports/Textures/Tool Box Red 4K/Tool Box_Tool Box_Roughness.png
+map_refl /Volumes/Main 4TB/Business/Digital Products/Assets/Tool Box/Exports/Textures/Tool Box Red 4K/Tool Box_Tool Box_Metallic.png
+map_Bump -bm 1.000000 /Volumes/Main 4TB/Business/Digital Products/Assets/Tool Box/Exports/Textures/Tool Box Red 4K/Tool Box_Tool Box_Normal.png

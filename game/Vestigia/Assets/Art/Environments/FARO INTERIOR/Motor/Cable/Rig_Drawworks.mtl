@@ -1,0 +1,70 @@
+# 
+# Wavefront material file
+# Converted by the DEEP Exploration  Deep Exploration 6.5 x64 6.5.0.9182
+# Right Hemisphere, LTD
+# http://www.righthemisphere.com/
+# 
+
+newmtl Explorer_Default
+Ka 0.117647 0.117647 0.117647
+Kd 0.752941 0.752941 0.752941
+Ks 0.752941 0.752941 0.752941
+illum 2
+Ns 8
+map_Kd 
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl Dark_Metal
+Ka 0 0 0
+Kd 1 1 1
+Ks 0.162 0.162 0.162
+illum 2
+Ns 16
+map_Kd dark_metal.jpg
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl Block_1
+Ka 0 0 0
+Kd 1 1 1
+Ks 0.378 0.378 0.378
+illum 2
+Ns 32
+map_Kd Block_1_Diffuse.jpg
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl Block_2
+Ka 0 0 0
+Kd 1 1 1
+Ks 0.18 0.18 0.18
+illum 2
+Ns 19.0273
+map_Kd Block_2_Diffuse.jpg
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
