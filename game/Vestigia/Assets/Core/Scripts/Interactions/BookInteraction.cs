@@ -11,6 +11,10 @@ public class BookInteraction : MonoBehaviour
     [Header("Interacción")]
     [SerializeField] private GameObject interactHint;
 
+    [Header("Audio")]
+    [SerializeField] private AudioSource audioSource;
+    [SerializeField] private AudioClip sonidoClick;
+
     private bool playerIsNear;
     private bool isOpen;
 
@@ -46,7 +50,12 @@ public class BookInteraction : MonoBehaviour
         playerIsNear = true;
 
         if (!isOpen && interactHint != null)
+        {
             interactHint.SetActive(true);
+
+            if (audioSource != null && sonidoClick != null)
+                audioSource.PlayOneShot(sonidoClick);
+        }
     }
 
     private void OnTriggerExit(Collider other)

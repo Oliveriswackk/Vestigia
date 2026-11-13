@@ -1,3 +1,4 @@
+
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -11,7 +12,10 @@ public class PlayerMovement : MonoBehaviour
     private Transform cameraTransform;
     private Vector3 moveDirection;
     private Vector3 lastFacingDirection = Vector3.forward;
+
     public Vector3 LastFacingDirection => lastFacingDirection;
+
+    private bool canMove = true;
 
     void Start()
     {
@@ -41,8 +45,28 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
+    public void SetMovementEnabled(bool enabled)
+    {
+        canMove = enabled;
+
+        if (!canMove)
+        {
+            moveDirection = Vector3.zero;
+
+            if (animator != null)
+            {
+                animator.SetBool("IsWalking", false);
+                animator.SetFloat("MoveX", 0f);
+                animator.SetFloat("MoveY", 0f);
+            }
+        }
+    }
+
     void Update()
     {
+        if (!canMove)
+            return;
+
         Vector2 input = Vector2.zero;
 
         if (Keyboard.current != null)
@@ -94,7 +118,7 @@ public class PlayerMovement : MonoBehaviour
 
     void FixedUpdate()
     {
-        if (moveDirection.sqrMagnitude < 0.001f)
+        if (!canMove || moveDirection.sqrMagnitude < 0.001f)
             return;
 
         Vector3 movement =

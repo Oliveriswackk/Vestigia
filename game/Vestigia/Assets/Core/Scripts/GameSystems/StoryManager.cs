@@ -20,8 +20,13 @@ public class StoryManager : MonoBehaviour
         }
 
         Instance = this;
+        transform.SetParent(null);
         DontDestroyOnLoad(gameObject);
     }
+
+    // ==========================================
+    // RADIO
+    // ==========================================
 
     public void StartRadioPuzzle()
     {
@@ -48,14 +53,24 @@ public class StoryManager : MonoBehaviour
 
     private void CompleteRadioPuzzle()
     {
-        GameProgress.Instance.radio_sintonizada = true;
+        if (GameProgress.Instance == null)
+        {
+            Debug.LogError("No se encontró GameProgress.");
+            return;
+        }
+
+        GameProgress.Instance.SetRadioSintonizada();
 
         Debug.Log("Historia: radio sintonizada.");
 
         OnRadioPuzzleCompleted.Invoke();
     }
 
-    public void AddPhotoFragment()
+    // ==========================================
+    // FOTOGRAFÍA
+    // ==========================================
+
+    public void AddPhotoFragment(int planta)
     {
         if (GameProgress.Instance == null)
         {
@@ -63,26 +78,32 @@ public class StoryManager : MonoBehaviour
             return;
         }
 
-        if (GameProgress.Instance.photo_quantity >= 3)
-        {
-            Debug.Log("Ya se recogieron los tres fragmentos.");
-            return;
-        }
+        int cantidadAnterior = GameProgress.Instance.photo_quantity;
 
-        GameProgress.Instance.photo_quantity++;
+        GameProgress.Instance.RegisterPhotoFragment(planta);
+
+        int cantidadActual = GameProgress.Instance.photo_quantity;
+
+        // Evitar eventos duplicados si el fragmento ya estaba recogido.
+        if (cantidadActual == cantidadAnterior)
+            return;
 
         Debug.Log(
             "Fragmentos: " +
-            GameProgress.Instance.photo_quantity +
+            cantidadActual +
             "/3"
         );
 
-        if (GameProgress.Instance.photo_quantity == 3)
+        if (cantidadActual == 3)
         {
             Debug.Log("Historia: fotografía completa.");
             OnPhotoCompleted.Invoke();
         }
     }
+
+    // ==========================================
+    // LENTE
+    // ==========================================
 
     public void CleanLens()
     {
@@ -98,12 +119,16 @@ public class StoryManager : MonoBehaviour
             return;
         }
 
-        GameProgress.Instance.lente_limpio = true;
+        GameProgress.Instance.SetLenteLimpio();
 
         Debug.Log("Historia: lente limpia.");
 
         OnLensCleaned.Invoke();
     }
+
+    // ==========================================
+    // OBSERVATORIO
+    // ==========================================
 
     public void FindObservatory()
     {
@@ -125,37 +150,32 @@ public class StoryManager : MonoBehaviour
             return;
         }
 
-        GameProgress.Instance.obs_encontrado = true;
+        GameProgress.Instance.SetObservatorioEncontrado();
 
         Debug.Log("Historia: observatorio encontrado.");
 
         OnObservatoryFound.Invoke();
     }
 
+    // ==========================================
+    // TRANSICIONES DE ESCENA
+    // ==========================================
 
-    [ContextMenu("PRUEBA: Completar puzzle de radio")]
-    private void TestRadioPuzzle()
+    public void EnterLighthouse()
     {
-        StartRadioPuzzle();
-    }
+        if (GameProgress.Instance == null)
+        {
+            Debug.LogError("No se encontró GameProgress.");
+            return;
+        }
 
+        if (!GameProgress.Instance.radio_sintonizada)
+        {
+            Debug.Log("La radio todavía no está sintonizada.");
+            return;
+        }
 
-
-public void EnterLighthouse()
-{
-    if (GameProgress.Instance == null)
-    {
-        Debug.LogError("No se encontró GameProgress.");
-        return;
-    }
-
-    if (!GameProgress.Instance.radio_sintonizada)
-    {
-        Debug.Log("La radio todavía no está sintonizada.");
-        return;
-    }
-
-    if (SceneTransition.Instance == null)
+        if (SceneTransition.Instance == null)
         {
             Debug.LogError("No se encontró SceneTransition.");
             return;
@@ -164,4 +184,13 @@ public void EnterLighthouse()
         SceneTransition.Instance.ChangeScene("Escena3_Faro");
     }
 
+    // ==========================================
+    // PRUEBAS
+    // ==========================================
+
+    [ContextMenu("PRUEBA: Completar puzzle de radio")]
+    private void TestRadioPuzzle()
+    {
+        StartRadioPuzzle();
+    }
 }

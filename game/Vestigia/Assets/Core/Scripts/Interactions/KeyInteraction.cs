@@ -1,3 +1,4 @@
+
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -10,12 +11,16 @@ public class KeyInteraction : MonoBehaviour
     [Header("Interacción")]
     [SerializeField] private GameObject interactHint;
 
+    [Header("Audio")]
+    [SerializeField] private AudioSource audioSource;
+    [SerializeField] private AudioClip sonidoClick;
+    [SerializeField] private AudioClip sonidoCollectMagic;
+
     private bool playerIsNear;
     private bool isCollected;
 
     public static bool HasKey { get; private set; }
 
-    // Reinicia el estado al iniciar una nueva sesión del juego.
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
     private static void ResetKey()
     {
@@ -54,7 +59,12 @@ public class KeyInteraction : MonoBehaviour
         playerIsNear = true;
 
         if (interactHint != null)
+        {
             interactHint.SetActive(true);
+
+            if (audioSource != null && sonidoClick != null)
+                audioSource.PlayOneShot(sonidoClick);
+        }
     }
 
     private void OnTriggerExit(Collider other)
@@ -81,6 +91,9 @@ public class KeyInteraction : MonoBehaviour
 
         if (interactHint != null)
             interactHint.SetActive(false);
+
+        if (audioSource != null && sonidoCollectMagic != null)
+            audioSource.PlayOneShot(sonidoCollectMagic);
 
         Debug.Log("Llave recogida. Ahora puedes abrir la reja.");
     }

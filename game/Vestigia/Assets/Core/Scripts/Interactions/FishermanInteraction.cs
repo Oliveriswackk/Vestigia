@@ -40,11 +40,9 @@ public class FishermanInteraction : MonoBehaviour
 
     private string[] lines =
     {
-        "PESCADOR: Que bonito dia para pescar, si no fuera por la radio",
-        "CIENTÍFICA: ¿Qué le ocurre?",
-        "PESCADOR: No sé, de repente hace interferencia y no me deja escuchar a Frank Sinatra",
-        "CIENTÍFICA: ¿Me la permite?",
-        "PESCADOR: Claro, pero ya te digo yo que parece estar rota"
+        "PESCADOR: Primero se cortaba la música. Ahora lleva un rato haciendo ese ruido.",
+        "JANNETTE: Se escucha algo entre la estática, parece repetirse un sonido.",
+        "PESCADOR: Si quiere revisarla, adelante. Yo ya no sé qué moverle.",
     };
 
     private int currentLine;

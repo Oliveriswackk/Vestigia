@@ -1,3 +1,5 @@
+
+using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -9,6 +11,14 @@ public class GateInteraction : MonoBehaviour
 
     [Header("Interacción")]
     [SerializeField] private GameObject interactHint;
+
+    [Header("Sonido de apertura")]
+    [SerializeField] private AudioSource audioSource;
+    [SerializeField] private AudioClip sonidoApertura;
+
+    [Header("Transición")]
+    [SerializeField] private string nextScene =
+        "Escena3.2_SegundoPiso";
 
     private bool playerIsNear;
     private bool isOpen;
@@ -28,8 +38,8 @@ public class GateInteraction : MonoBehaviour
     private void Update()
     {
         bool canInteract = playerIsNear &&
-                        KeyInteraction.HasKey &&
-                        !isOpen;
+                           KeyInteraction.HasKey &&
+                           !isOpen;
 
         if (!canInteract)
             return;
@@ -48,7 +58,8 @@ public class GateInteraction : MonoBehaviour
 
         playerIsNear = true;
 
-        if (KeyInteraction.HasKey && !isOpen && interactHint != null)
+        if (KeyInteraction.HasKey && !isOpen &&
+            interactHint != null)
         {
             interactHint.SetActive(true);
         }
@@ -67,6 +78,15 @@ public class GateInteraction : MonoBehaviour
 
     private void OpenGate()
     {
+        if (!Application.CanStreamedLevelBeLoaded(nextScene))
+        {
+            Debug.LogError(
+                "GateInteraction: No se puede cargar la escena: " +
+                nextScene
+            );
+            return;
+        }
+
         isOpen = true;
 
         if (rejaCerrada != null)
@@ -79,5 +99,35 @@ public class GateInteraction : MonoBehaviour
             interactHint.SetActive(false);
 
         Debug.Log("Reja abierta.");
+
+        StartCoroutine(OpenGateSequence());
+    }
+
+    private IEnumerator OpenGateSequence()
+    {
+        // Reproducir sonido de apertura.
+        if (audioSource != null && sonidoApertura != null)
+        {
+            audioSource.PlayOneShot(sonidoApertura);
+
+            float pitch = Mathf.Max(
+                Mathf.Abs(audioSource.pitch), 0.01f
+            );
+
+            yield return new WaitForSeconds(
+                sonidoApertura.length / pitch
+            );
+        }
+
+        // Iniciar transición al segundo piso.
+        if (SceneTransition.Instance == null)
+        {
+            Debug.LogError(
+                "GateInteraction: No se encontró SceneTransition."
+            );
+            yield break;
+        }
+
+        SceneTransition.Instance.ChangeScene(nextScene);
     }
 }
