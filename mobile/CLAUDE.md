@@ -7,7 +7,7 @@ Este prototipo móvil explora puzzles por separado. No es todavía la experienci
 
 ## Estado actual
 
-- La app abre en el **menú principal de Vestigia** con la lista de puzzles. El contador inicial de Flutter se eliminó.
+- La app abre en el **menú principal de Vestigia**. Primero está la entrada **Sala** (conexión con el juego, provisional) y después los puzzles. El contador inicial de Flutter se eliminó.
 - Hay cuatro puzzles jugables (prototipos), en el orden de la brújula: **Radio** (registro `137`), **Fotografía** (inscripción `+042`), **Mirador del faro** (limpieza, perillas y evento) y **Observatorio** (AR/DEC, calibración y orientación del teléfono).
 - Orientación fijada en vertical (`lib/main.dart`).
 - Nombre visible de la app: “Vestigia”. El paquete sigue siendo `radio_coordenadas` / `com.example.radio_coordenadas` (provisional).
@@ -24,6 +24,13 @@ lib/
   core/celestial_target.dart    registros compartidos y posición del cielo ficticio congelado
   core/dial_feedback.dart       cuándo vibrar al girar una perilla (muescas y topes); radio y mirador
   core/widgets/tuning_knob.dart perilla de latón compartida (radio y mirador)
+  core/room/
+    backend_config.dart         URL del backend (--dart-define=VESTIGIA_URL) y su WebSocket
+    room_models.dart            código normalizado, mensaje {type, payload}, estado de la sala
+    room_api.dart               interfaz REST (unirse, estado) + implementación con dart:io
+    room_channel.dart           interfaz WebSocket + implementación con dart:io
+    room_connection.dart        unirse, auth, reconexión, estado y registro (ChangeNotifier)
+  room/room_screen.dart         pantalla provisional: escribir el código y ver la conexión
   menu/puzzle_entry.dart        entrada de menú (título, descripción, icono, builder)
   menu/puzzle_catalog.dart      lista de puzzles del menú
   menu/main_menu_screen.dart    menú; no conoce la lógica de ningún puzzle
@@ -67,6 +74,19 @@ android/app/src/main/kotlin/com/example/radio_coordenadas/
 1. Crear `lib/puzzles/<nombre>/` con su pantalla y su lógica separada.
 2. Registrar una `PuzzleEntry` en `lib/menu/puzzle_catalog.dart`.
 3. Cada apertura construye una pantalla nueva; liberar recursos en `dispose` y al salir (`PopScope`).
+
+## Sala del juego: conexión implementada (provisional)
+
+Pantalla **Sala** del menú, solo para probar la conexión con el juego. Contrato del backend: `/Users/raulcano/Desktop/vestigia-backend/docs/integracion-flutter.md` y `tiempo-real.md` (API `/api/v1`; el `backend/` de este monorepo es la versión vieja del laboratorio).
+
+- El código de sala es el pueblo que se elige en el juego de la PC. El campo lo escribe en mayúsculas y sin espacios.
+- **Unirse:** `POST /api/v1/salas/{codigo}/unirse` (sin token) devuelve el token una sola vez. `404` = no hay partida con ese código; `409` = la partida ya tiene un teléfono.
+- **WebSocket:** `wss://…/ws`; primer mensaje `{"type":"auth","payload":{"token":…}}` (el token no va en la URL). Tras `auth.ok` se pide `GET /salas/{codigo}/estado`. Los mensajes `puzzle.actualizado`, `descubrimiento.nuevo` y `escena.cambiada` vuelven a pedir el estado y se anotan en el registro. La app no manda nada más por el WebSocket.
+- **Reconexión:** espera 1, 2, 4, 8, 16 s y luego 30 s. No reconecta con `1000`, `4000`, `4001`, `4009` ni `1009`: termina la sesión. `sala.cerrada` o un `401` también la terminan.
+- La conexión (`RoomConnection`) vive en `VestigiaApp`: sobrevive a salir de la pantalla Sala y se refresca al volver la app al primer plano. **Salir de la sala** (botón de la barra) solo la olvida en la app; el servidor sigue con la app enlazada hasta que el juego cierre la sala o expire (2 h), así que volver a unirse a la misma da `409`.
+- La URL por defecto es el servidor de Railway (`https`). Para un backend local en el emulador: `flutter run --dart-define=VESTIGIA_URL=http://10.0.2.2:8080` y `android:usesCleartextTraffic="true"` en el manifiesto (no está puesto).
+- Sin dependencias nuevas: REST y WebSocket usan `dart:io`. Se añadió el permiso `INTERNET` al manifiesto (el de debug lo trae solo; el de release no).
+- **Pendiente:** guardar el token en almacenamiento seguro (la guía recomienda `flutter_secure_storage`, tema C4 sin confirmar) para recuperar la partida al reabrir la app; avisar `iniciado`/`completada` de los puzzles; libreta y burbuja; mostrar las coordenadas recibidas. Los puzzles siguen siendo autónomos.
 
 ## Puzzle de radio: comportamiento implementado
 
@@ -165,4 +185,4 @@ flutter build apk --debug
 
 El SDK local está en `C:\Users\aldob\AppData\Local\Flutter\flutter`. La APK queda en `build/app/outputs/flutter-apk/app-debug.apk`.
 
-Las pruebas usan audio, vibración y orientación falsos, o simulan los canales nativos. Las de la fotografía y el mirador usan gestos reales (arrastrar piezas, frotar el lente, girar perillas). Las del Observatorio cubren códigos/signo, calibración, cruce de 360°, espera, lecturas obsoletas, interrupciones, reinicio y liberación del sensor. El sonido real, la vibración y la comodidad de los gestos/apuntado requieren un teléfono físico.
+Las pruebas usan audio, vibración, orientación, API y WebSocket de sala falsos (`test/support/room_fakes.dart`), o simulan los canales nativos. Las de la fotografía y el mirador usan gestos reales (arrastrar piezas, frotar el lente, girar perillas). Las del Observatorio cubren códigos/signo, calibración, cruce de 360°, espera, lecturas obsoletas, interrupciones, reinicio y liberación del sensor. El sonido real, la vibración y la comodidad de los gestos/apuntado requieren un teléfono físico.
