@@ -1,0 +1,328 @@
+# 
+# Wavefront material file
+# Converted by the DEEP Exploration  Deep Exploration 6.5 x64 6.5.0.9182
+# Right Hemisphere, LTD
+# http://www.righthemisphere.com/
+# 
+
+newmtl slide_projector_body
+Ka 0.423529 0.372549 0.34902
+Kd 0.423529 0.372549 0.34902
+Ks 0.9 0.9 0.9
+illum 2
+Ns 39.3966
+map_Kd 
+map_bump slide_projector_bump_2.jpg
+bump slide_projector_bump_2.jpg
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl slide_projector_body0
+Ka 0.423529 0.372549 0.34902
+Kd 0.423529 0.372549 0.34902
+Ks 0.9 0.9 0.9
+illum 2
+Ns 39.3966
+map_Kd 
+map_bump slide_projector_bump_2.jpg
+bump slide_projector_bump_2.jpg
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl slide_projector_body_9
+Ka 0.415686 0.415686 0.415686
+Kd 0.415686 0.415686 0.415686
+Ks 0.9 0.9 0.9
+illum 2
+Ns 32
+map_Kd 
+map_bump slide_projector_bump_1.jpg
+bump slide_projector_bump_1.jpg
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl slide_projector_body_18
+Ka 0.423529 0.372549 0.34902
+Kd 0.423529 0.372549 0.34902
+Ks 0.9 0.9 0.9
+illum 2
+Ns 39.3966
+map_Kd 
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl slide_projector_body_2
+Ka 0.4 0.4 0.4
+Kd 0.4 0.4 0.4
+Ks 0.9 0.9 0.9
+illum 2
+Ns 181.019
+map_Kd 
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl slide_projector_body_3
+Ka 0.0862745 0.0862745 0.0862745
+Kd 1 1 1
+Ks 0.9 0.9 0.9
+illum 2
+Ns 256
+map_Kd slide_projector_diffuse.jpg
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl slide_projector_body_8
+Ka 0.0862745 0.0862745 0.0862745
+Kd 1 1 1
+Ks 0.9 0.9 0.9
+illum 2
+Ns 256
+map_Kd slide_projector_diffuse_1.jpg
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl slide_projector_body_16
+Ka 0.0862745 0.0862745 0.0862745
+Kd 0.0862745 0.0862745 0.0862745
+Ks 0.9 0.9 0.9
+illum 2
+Ns 256
+map_Kd 
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl slide_projector_body_4
+Ka 0.94902 0.94902 0.94902
+Kd 1 1 1
+Ks 0.9 0.9 0.9
+illum 2
+Ns 362.039
+d 0.34
+map_Kd slide_projector_diffuse_lens.jpg
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl slide_projector_body_5
+Ka 0.356863 0.356863 0.356863
+Kd 0.356863 0.356863 0.356863
+Ks 0.9 0.9 0.9
+illum 2
+Ns 6.49802
+map_Kd 
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl slide_projector_body_1
+Ka 0.309804 0.309804 0.309804
+Kd 0.309804 0.309804 0.309804
+Ks 0.9 0.9 0.9
+illum 2
+Ns 36.7583
+map_Kd 
+map_bump slide_projector_bump_2.jpg
+bump slide_projector_bump_2.jpg
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl slide_projector_body_15
+Ka 0.494118 0.494118 0.494118
+Kd 0.494118 0.494118 0.494118
+Ks 0.9 0.9 0.9
+illum 2
+Ns 45.2548
+map_Kd 
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl slide_projector_body_11
+Ka 0.0862745 0.0862745 0.0862745
+Kd 1 1 1
+Ks 0.9 0.9 0.9
+illum 2
+Ns 32
+map_Kd slide_projector_diffuse.jpg
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl slide_projector_body_12
+Ka 0.337255 0.337255 0.337255
+Kd 0.337255 0.337255 0.337255
+Ks 0.9 0.9 0.9
+illum 2
+Ns 19.6983
+map_Kd 
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl slide_projector_body_14
+Ka 0.835294 0.835294 0.835294
+Kd 0.835294 0.835294 0.835294
+Ks 0.9 0.9 0.9
+illum 2
+Ns 64
+map_Kd 
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl slide_projector_body_13
+Ka 0.0862745 0.0862745 0.0862745
+Kd 0.0862745 0.0862745 0.0862745
+Ks 0.9 0.9 0.9
+illum 2
+Ns 362.039
+d 0.38
+map_Kd 
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl slide_projector_body_17
+Ka 0.835294 0.835294 0.835294
+Kd 0.835294 0.835294 0.835294
+Ks 0.9 0.9 0.9
+illum 2
+Ns 64
+map_Kd 
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl slide_projector_body_10
+Ka 0.407843 0.407843 0.407843
+Kd 0.407843 0.407843 0.407843
+Ks 0.9 0.9 0.9
+illum 2
+Ns 32
+map_Kd 
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl slide_projector_body_6
+Ka 0.921569 0.921569 0.921569
+Kd 0.921569 0.921569 0.921569
+Ks 0.9 0.9 0.9
+illum 2
+Ns 64
+map_Kd 
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl slide_projector_body_7
+Ka 0.584314 0.517647 0.415686
+Kd 0.584314 0.517647 0.415686
+Ks 0.9 0.9 0.9
+illum 2
+Ns 6.49802
+map_Kd 
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
