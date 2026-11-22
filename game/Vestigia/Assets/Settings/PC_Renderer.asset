@@ -43,7 +43,8 @@ MonoBehaviour:
   m_RendererFeatures:
   - {fileID: 7833122117494664109}
   - {fileID: -4860732929941406506}
-  m_RendererFeatureMap: ad6b866f10d7b46cd67ccc4a27358bbc
+  - {fileID: 3132889324269290109}
+  m_RendererFeatureMap: ad6b866f10d7b46cd67ccc4a27358bbc7d42afdd3d427a2b
   xrSystemData: {fileID: 0}
   postProcessData: {fileID: 11400000, guid: 41439944d30ece34e96484bdb6645b55, type: 2}
   m_AssetVersion: 3
@@ -72,6 +73,22 @@ MonoBehaviour:
   m_AccurateGbufferNormals: 0
   m_IntermediateTextureMode: 0
   m_TileOnlyMode: 0
+--- !u!114 &3132889324269290109
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9d66b974b0cd1445ca872817bbc9cd39, type: 3}
+  m_Name: CameraBlurRendererFeature
+  m_EditorClassIdentifier: Assembly-CSharp::CameraBlurRendererFeature
+  m_Active: 1
+  settings:
+    blurShader: {fileID: 4800000, guid: ec597c582342b4ad7a7e6a1f759f29aa, type: 3}
+    blurSize: 8
 --- !u!114 &7833122117494664109
 MonoBehaviour:
   m_ObjectHideFlags: 1

@@ -30,6 +30,14 @@ public class PhotoFragmentInteraction : MonoBehaviour
     [TextArea(2, 4)]
     [SerializeField] private string[] dialogueLines;
 
+    [Header("Diálogo del mirador")]
+    [TextArea(2, 4)]
+    [SerializeField] private string[] miradorDialogueLines;
+
+    [SerializeField] private MiradorCameraTransition miradorCameraTransition;
+
+    private bool showingMiradorDialogue;
+
     [Header("Pantalla de espera")]
     [SerializeField] private GameObject waitingCanvas;
 
@@ -244,8 +252,7 @@ public class PhotoFragmentInteraction : MonoBehaviour
 
     private void HandleDialogueInput()
     {
-        if (dialoguePanel == null ||
-            !dialoguePanel.activeSelf)
+        if (dialoguePanel == null || !dialoguePanel.activeSelf)
             return;
 
         if (Keyboard.current == null ||
@@ -254,13 +261,72 @@ public class PhotoFragmentInteraction : MonoBehaviour
 
         currentDialogueLine++;
 
-        if (currentDialogueLine >= dialogueLines.Length)
+        string[] activeLines = showingMiradorDialogue
+            ? miradorDialogueLines
+            : dialogueLines;
+
+        if (currentDialogueLine >= activeLines.Length)
         {
-            StartCoroutine(ShowWaitingScreen());
+            if (showingMiradorDialogue)
+            {
+                StartCoroutine(TransitionToMirador());
+            }
+            else
+            {
+                StartCoroutine(ShowWaitingScreen());
+            }
+
             return;
         }
 
-        dialogueText.text = dialogueLines[currentDialogueLine];
+        dialogueText.text = activeLines[currentDialogueLine];
+    }
+
+    private void StartMiradorDialogue()
+    {
+        showingMiradorDialogue = true;
+        currentDialogueLine = 0;
+
+        if (miradorDialogueLines == null ||
+            miradorDialogueLines.Length == 0)
+        {
+            Debug.LogError("No hay diálogo del mirador configurado.");
+            StartCoroutine(TransitionToMirador());
+            return;
+        }
+
+        dialoguePanel.SetActive(true);
+        dialogueText.text = miradorDialogueLines[0];
+
+        if (continueHint != null)
+        {
+            continueHint.SetActive(true);
+            continueHint.transform.SetAsLastSibling();
+        }
+
+        Debug.Log("Mirador: comienza el diálogo.");
+    }
+
+    private IEnumerator TransitionToMirador()
+    {
+        dialoguePanel.SetActive(false);
+
+        if (continueHint != null)
+            continueHint.SetActive(false);
+
+        if (miradorCameraTransition == null)
+        {
+            Debug.LogError("No se asignó MiradorCameraTransition.");
+            yield break;
+        }
+
+        Debug.Log("Mirador: comienza la transición de cámara.");
+
+        yield return StartCoroutine(
+            miradorCameraTransition.MoveToObservatory()
+        );
+
+        Debug.Log("Mirador: transición terminada. Listo para iniciar la observación.");
     }
 
     private IEnumerator ShowWaitingScreen()
@@ -321,10 +387,9 @@ public class PhotoFragmentInteraction : MonoBehaviour
 
         waitingCanvas.SetActive(false);
 
-        RestoreControls();
-        sequenceRunning = false;
-
         Debug.Log("Fotografía: puzzle completado.");
+
+        StartMiradorDialogue();
     }
 
     private void OnPhotoPuzzleCompleted()

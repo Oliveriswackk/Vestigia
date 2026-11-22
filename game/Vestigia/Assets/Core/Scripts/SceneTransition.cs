@@ -20,6 +20,9 @@ public class SceneTransition : MonoBehaviour
     private bool transitioning;
     private PlayerMovement playerMovement;
 
+    private string pendingSpawnPoint;
+    private bool keepPlayerLocked;
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -37,7 +40,7 @@ public class SceneTransition : MonoBehaviour
 
         if (overlay == null)
         {
-            Debug.LogError("SceneTransition: No se encontró el CanvasGroup.");
+            Debug.LogError("SceneTransition: No se encontró CanvasGroup.");
             enabled = false;
             return;
         }
@@ -54,34 +57,37 @@ public class SceneTransition : MonoBehaviour
         }
     }
 
-    // Transición normal: utiliza las pisadas originales.
+    // Transición normal.
     public void ChangeScene(string sceneName)
     {
-        StartTransition(
-            sceneName,
-            footstepsClip,
-            footstepsDuration
-        );
+        StartTransition(sceneName, footstepsClip, footstepsDuration, null, false);
     }
 
-    // Transición personalizada: utiliza el sonido indicado.
+    // Transición con punto de aparición.
+    public void ChangeScene(string sceneName, string spawnPoint)
+    {
+        StartTransition(sceneName, footstepsClip, footstepsDuration, spawnPoint, false);
+    }
+
+    // Transición con punto de aparición y jugador bloqueado.
+    public void ChangeScene(string sceneName, string spawnPoint, bool lockPlayer)
+    {
+        StartTransition(sceneName, footstepsClip, footstepsDuration, spawnPoint, lockPlayer);
+    }
+
+    // Transición con sonido personalizado.
     public void ChangeScene(string sceneName, AudioClip transitionClip)
     {
-        float duration = transitionClip != null
-            ? transitionClip.length
-            : 0f;
-
-        StartTransition(
-            sceneName,
-            transitionClip,
-            duration
-        );
+        float duration = transitionClip != null ? transitionClip.length : 0f;
+        StartTransition(sceneName, transitionClip, duration, null, false);
     }
 
     private void StartTransition(
         string sceneName,
         AudioClip transitionClip,
-        float audioDuration)
+        float audioDuration,
+        string spawnPoint,
+        bool lockPlayer)
     {
         if (transitioning)
             return;
@@ -98,9 +104,10 @@ public class SceneTransition : MonoBehaviour
             return;
         }
 
-        StartCoroutine(
-            ChangeSceneRoutine(sceneName, transitionClip, audioDuration)
-        );
+        pendingSpawnPoint = spawnPoint;
+        keepPlayerLocked = lockPlayer;
+
+        StartCoroutine(ChangeSceneRoutine(sceneName, transitionClip, audioDuration));
     }
 
     private IEnumerator ChangeSceneRoutine(
@@ -111,45 +118,33 @@ public class SceneTransition : MonoBehaviour
         transitioning = true;
         overlay.blocksRaycasts = true;
 
-        // 1. Bloquear al jugador.
-        playerMovement = FindObjectOfType<PlayerMovement>();
+        playerMovement = FindFirstObjectByType<PlayerMovement>();
 
         if (playerMovement != null)
             playerMovement.SetMovementEnabled(false);
 
-        // 2. Fundido hasta negro.
         yield return Fade(0f, 1f, fadeToBlack);
 
-        // 3. Garantizar que el negro se haya renderizado.
         overlay.alpha = 1f;
         yield return new WaitForEndOfFrame();
 
-        // 4. Reproducir el sonido seleccionado.
         if (footstepsSource != null && transitionClip != null)
         {
             footstepsSource.clip = transitionClip;
             footstepsSource.Play();
         }
-        else if (transitionClip != null)
-        {
-            Debug.LogWarning("SceneTransition: No hay AudioSource asignado.");
-        }
 
-        // 5. Iniciar la carga de la escena.
         AsyncOperation operation = SceneManager.LoadSceneAsync(sceneName);
 
         if (operation == null)
         {
-            Debug.LogError("No se pudo iniciar la carga de: " + sceneName);
-
+            Debug.LogError("No se pudo cargar: " + sceneName);
             StopFootsteps();
             yield return Fade(1f, 0f, fadeFromBlack);
-            FinishTransition();
+            FinishTransition(false);
             yield break;
         }
 
-        // 6. Mantener pantalla negra hasta terminar
-        // tanto la carga como el audio.
         float elapsed = 0f;
 
         while (!operation.isDone || elapsed < audioDuration)
@@ -158,31 +153,44 @@ public class SceneTransition : MonoBehaviour
             yield return null;
         }
 
-        // 7. Detener el sonido.
         StopFootsteps();
 
-        // 8. Buscar al jugador de la nueva escena.
-        playerMovement = FindObjectOfType<PlayerMovement>();
+        playerMovement = FindFirstObjectByType<PlayerMovement>();
 
         if (playerMovement == null)
         {
-            Debug.LogError(
-                "SceneTransition: No se encontró PlayerMovement en la nueva escena."
-            );
+            Debug.LogError("SceneTransition: No se encontró PlayerMovement.");
         }
         else
         {
             playerMovement.SetMovementEnabled(false);
+
+            if (!string.IsNullOrEmpty(pendingSpawnPoint))
+            {
+                GameObject spawn = GameObject.Find(pendingSpawnPoint);
+
+                if (spawn == null)
+                {
+                    Debug.LogError(
+                        "SceneTransition: No se encontró el punto de aparición: " +
+                        pendingSpawnPoint
+                    );
+                }
+                else
+                {
+                    playerMovement.transform.SetPositionAndRotation(
+                        spawn.transform.position,
+                        spawn.transform.rotation
+                    );
+                }
+            }
         }
 
-        // 9. Esperar un frame manteniendo el negro.
         yield return new WaitForEndOfFrame();
 
-        // 10. Revelar la nueva escena.
         yield return Fade(1f, 0f, fadeFromBlack);
 
-        // 11. Devolver el control.
-        FinishTransition();
+        FinishTransition(!keepPlayerLocked);
     }
 
     private void StopFootsteps()
@@ -217,9 +225,9 @@ public class SceneTransition : MonoBehaviour
         overlay.alpha = end;
     }
 
-    private void FinishTransition()
+    private void FinishTransition(bool unlockPlayer)
     {
-        if (playerMovement != null)
+        if (unlockPlayer && playerMovement != null)
             playerMovement.SetMovementEnabled(true);
 
         overlay.alpha = 0f;

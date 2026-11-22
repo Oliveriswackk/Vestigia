@@ -19,13 +19,29 @@ public class LighthouseGate : MonoBehaviour
 
     private void Update()
     {
-        if (unlocked || GameProgress.Instance == null)
+        if (transitioning || GameProgress.Instance == null)
+            return;
+
+        // Después de recibir a Yaro, el faro queda inaccesible.
+        if (GameProgress.Instance.regalo_yaro_entregado)
+        {
+            unlocked = false;
+
+            if (gateCollider != null)
+                gateCollider.enabled = false;
+
+            return;
+        }
+
+        if (unlocked)
             return;
 
         if (GameProgress.Instance.radio_sintonizada)
         {
             unlocked = true;
-            gateCollider.enabled = true;
+
+            if (gateCollider != null)
+                gateCollider.enabled = true;
 
             Debug.Log("Acceso al Faro desbloqueado.");
         }
@@ -34,6 +50,10 @@ public class LighthouseGate : MonoBehaviour
     private void OnTriggerEnter(Collider other)
     {
         if (!unlocked || transitioning)
+            return;
+
+        if (GameProgress.Instance == null ||
+            GameProgress.Instance.regalo_yaro_entregado)
             return;
 
         if (other.GetComponentInParent<PlayerMovement>() == null)

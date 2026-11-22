@@ -13,10 +13,11 @@ public class CameraRotation : MonoBehaviour
     [SerializeField] private AudioClip rotationClip;
 
     private bool isRotating = false;
+    private bool inputEnabled = true;
 
     void Update()
     {
-        if (isRotating || Keyboard.current == null)
+        if (!inputEnabled || isRotating || Keyboard.current == null)
             return;
 
         if (Keyboard.current.qKey.wasPressedThisFrame)
@@ -29,21 +30,58 @@ public class CameraRotation : MonoBehaviour
         }
     }
 
+    public void SetInputEnabled(bool enabled)
+    {
+        inputEnabled = enabled;
+    }
+
     private IEnumerator RotateCamera(float angle)
     {
         isRotating = true;
 
-        // Reproducir el sonido al comenzar el giro.
-        if (rotationAudio != null && rotationClip != null)
-        {
-            rotationAudio.PlayOneShot(rotationClip);
-        }
+        PlayRotationSound();
 
         Quaternion startRotation = transform.rotation;
 
         Quaternion targetRotation =
             startRotation * Quaternion.Euler(0f, angle, 0f);
 
+        yield return RotateTo(startRotation, targetRotation);
+
+        isRotating = false;
+    }
+
+    public void FaceVelador()
+    {
+        if (isRotating)
+            StopAllCoroutines();
+
+        StartCoroutine(RotateToVelador());
+    }
+
+    private IEnumerator RotateToVelador()
+    {
+        isRotating = true;
+
+        PlayRotationSound();
+
+        Quaternion startRotation = transform.rotation;
+
+        Quaternion targetRotation = Quaternion.Euler(
+            transform.eulerAngles.x,
+            -180f,
+            transform.eulerAngles.z
+        );
+
+        yield return RotateTo(startRotation, targetRotation);
+
+        isRotating = false;
+    }
+
+    private IEnumerator RotateTo(
+        Quaternion startRotation,
+        Quaternion targetRotation)
+    {
         float elapsed = 0f;
 
         while (elapsed < rotationDuration)
@@ -63,6 +101,11 @@ public class CameraRotation : MonoBehaviour
         }
 
         transform.rotation = targetRotation;
-        isRotating = false;
+    }
+
+    private void PlayRotationSound()
+    {
+        if (rotationAudio != null && rotationClip != null)
+            rotationAudio.PlayOneShot(rotationClip);
     }
 }
