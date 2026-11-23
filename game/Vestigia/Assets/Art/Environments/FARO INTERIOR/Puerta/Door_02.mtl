@@ -1,0 +1,70 @@
+# 3ds Max Wavefront OBJ Exporter v0.97b - (c)2007 guruware
+# File Created: 24.04.2020 12:39:19
+
+newmtl Metal_02_Mat
+	Ns 100.0000
+	Ni 4.0000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 0.5880 0.5880 0.5880
+	Kd 0.5000 0.5000 0.5000
+	Ks 0.0000 0.0000 0.0000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka textures/Metal_Door_02_Diffuse.png
+	map_Kd textures/Metal_Door_02_Diffuse.png
+	map_Ks textures/Metal_Door_02_Specular.png
+	map_bump textures/Metal_Door_02_Normal.png
+	bump textures/Metal_Door_02_Normal.png
+
+newmtl Wood_02_Mat
+	Ns 100.0000
+	Ni 1.6000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 0.5880 0.5880 0.5880
+	Kd 0.6039 0.6039 0.6039
+	Ks 0.0000 0.0000 0.0000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka textures/Wood_Door_02_Diffuse.png
+	map_Kd textures/Wood_Door_02_Diffuse.png
+	map_Ks textures/Wood_Door_02_Specular.png
+	map_bump textures/Wood_Door_02_Normal.png
+	bump textures/Wood_Door_02_Normal.png
+
+newmtl Key_01_Mat
+	Ns 100.0000
+	Ni 8.0000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 0.5880 0.5880 0.5880
+	Kd 0.5000 0.5000 0.5000
+	Ks 0.0000 0.0000 0.0000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka textures/Key_01_Diffuse.png
+	map_Kd textures/Key_01_Diffuse.png
+	map_Ks textures/Key_01_Specular.png
+	map_bump textures/Key_01_Normal.png
+	bump textures/Key_01_Normal.png
+
+newmtl Padlock_03_Mat
+	Ns 100.0000
+	Ni 8.0000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 0.5880 0.5880 0.5880
+	Kd 0.5000 0.5000 0.5000
+	Ks 0.0000 0.0000 0.0000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka textures/Padlock_03_Diffuse.png
+	map_Kd textures/Padlock_03_Diffuse.png
+	map_Ks textures/Padlock_03_Specular.png
+	map_bump textures/Padlock_03_Normal.png
+	bump textures/Padlock_03_Normal.png

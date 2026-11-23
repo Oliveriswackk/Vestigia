@@ -1,0 +1,408 @@
+# 
+# Wavefront material file
+# Converted by the DEEP Exploration  Deep Exploration 6.5 x64 6.5.0.9182
+# Right Hemisphere, LTD
+# http://www.righthemisphere.com/
+# 
+
+newmtl Geodesic_dome001
+Ka 0.5 0.5 0.5
+Kd 1 1 1
+Ks 0.9 0.9 0.9
+illum 2
+Ns 64
+map_Kd Geodesic_dome_wall.jpg
+map_bump Geodesic_dome_wall_bump.jpg
+bump Geodesic_dome_wall_bump.jpg
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl Geodesic_dome_door
+Ka 0.5 0.5 0.5
+Kd 1 1 1
+Ks 0.9 0.9 0.9
+illum 2
+Ns 64
+map_Kd Geodesic_dome_door.jpg
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl Geodesic_dome_doorhandle
+Ka 0.392157 0.301961 0.156863
+Kd 0.392157 0.301961 0.156863
+Ks 1 0.764706 0.396078
+illum 2
+Ns 8
+map_Kd 
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl Geodesic_dome_lamp045
+Ka 1 1 1
+Kd 1 1 1
+Ks 0.9 0.9 0.9
+illum 2
+Ns 51.9842
+map_Kd 
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl Geodesic_dome_step
+Ka 0.5 0.5 0.5
+Kd 1 1 1
+Ks 0.9 0.9 0.9
+illum 2
+Ns 64
+map_Kd Geodesic_dome_step.jpg
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl Geodesic_dome_glass
+Ka 0 0 0
+Kd 0 0 0
+Ks 0.9 0.9 0.9
+illum 2
+Ns 207.937
+d 0.15
+map_Kd 
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl Geodesic_dome_blind
+Ka 0.5 0.5 0.5
+Kd 1 1 1
+Ks 0.9 0.9 0.9
+illum 2
+Ns 64
+map_Kd Geodesic_dome_blind.jpg
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl Geodesic_dome_arch
+Ka 0.5 0.5 0.5
+Kd 1 1 1
+Ks 0.9 0.9 0.9
+illum 2
+Ns 64
+map_Kd Geodesic_dome_wall.jpg
+map_bump Geodesic_dome_wall_bump.jpg
+bump Geodesic_dome_wall_bump.jpg
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl Geodesic_dome1
+Ka 0.117647 0.137255 0.176471
+Kd 0.117647 0.137255 0.176471
+Ks 0.9 0.9 0.9
+illum 2
+Ns 64
+map_Kd 
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl Geodesic_dome_arch0
+Ka 0.5 0.5 0.5
+Kd 0.5 0.5 0.5
+Ks 0.9 0.9 0.9
+illum 2
+Ns 64
+map_Kd 
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl Geodesic_dome_balk
+Ka 0.5 0.5 0.5
+Kd 1 1 1
+Ks 0.9 0.9 0.9
+illum 2
+Ns 64
+map_Kd Geodesic_dome_door.jpg
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl Geodesic_dome_wall
+Ka 0.5 0.5 0.5
+Kd 1 1 1
+Ks 0.9 0.9 0.9
+illum 2
+Ns 64
+map_Kd Geodesic_dome_wall.jpg
+map_bump Geodesic_dome_wall_bump.jpg
+bump Geodesic_dome_wall_bump.jpg
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl Geodesic_dome_foundation02
+Ka 0.027451 0.027451 0.027451
+Kd 0.027451 0.027451 0.027451
+Ks 0.9 0.9 0.9
+illum 2
+Ns 64
+map_Kd 
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl Geodesic_dome_window2
+Ka 0 0 0
+Kd 0 0 0
+Ks 0.9 0.9 0.9
+illum 2
+Ns 181.019
+d 0.15
+map_Kd 
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl Geodesic_dome_window1
+Ka 0.027451 0.027451 0.027451
+Kd 0.027451 0.027451 0.027451
+Ks 0.9 0.9 0.9
+illum 2
+Ns 11.3137
+map_Kd 
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl Geodesic_dome_window
+Ka 0.027451 0.027451 0.027451
+Kd 0.027451 0.027451 0.027451
+Ks 0.9 0.9 0.9
+illum 2
+Ns 11.3137
+map_Kd 
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl Geodesic_dome_foundation
+Ka 0.5 0.5 0.5
+Kd 1 1 1
+Ks 0.9 0.9 0.9
+illum 2
+Ns 64
+map_Kd Geodesic_dome_foundation.jpg
+map_bump Geodesic_dome_foundation_normal.tga
+bump Geodesic_dome_foundation_normal.tga
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl Geodesic_dome10
+Ka 0.117647 0.137255 0.176471
+Kd 0.117647 0.137255 0.176471
+Ks 0.9 0.9 0.9
+illum 2
+Ns 64
+map_Kd 
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl Geodesic_dome_arch1
+Ka 0.5 0.5 0.5
+Kd 1 1 1
+Ks 0.9 0.9 0.9
+illum 2
+Ns 64
+map_Kd Geodesic_dome_wall.jpg
+map_bump Geodesic_dome_wall_bump.jpg
+bump Geodesic_dome_wall_bump.jpg
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl Geodesic_dome11
+Ka 0.117647 0.137255 0.176471
+Kd 0.117647 0.137255 0.176471
+Ks 0.9 0.9 0.9
+illum 2
+Ns 64
+map_Kd 
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl Geodesic_dome_arch2
+Ka 0.5 0.5 0.5
+Kd 0.5 0.5 0.5
+Ks 0.9 0.9 0.9
+illum 2
+Ns 64
+map_Kd 
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl Geodesic_dome_arch3
+Ka 0.5 0.5 0.5
+Kd 1 1 1
+Ks 0.9 0.9 0.9
+illum 2
+Ns 64
+map_Kd Geodesic_dome_wall.jpg
+map_bump Geodesic_dome_wall_bump.jpg
+bump Geodesic_dome_wall_bump.jpg
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl Geodesic_dome12
+Ka 0.117647 0.137255 0.176471
+Kd 0.117647 0.137255 0.176471
+Ks 0.9 0.9 0.9
+illum 2
+Ns 64
+map_Kd 
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl Geodesic_dome_arch4
+Ka 0.5 0.5 0.5
+Kd 0.5 0.5 0.5
+Ks 0.9 0.9 0.9
+illum 2
+Ns 64
+map_Kd 
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl Geodesic_dome_tile1
+Ka 0.5 0.5 0.5
+Kd 1 1 1
+Ks 0.9 0.9 0.9
+illum 2
+Ns 64
+map_Kd Geodesic_dome_tile.jpg
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 

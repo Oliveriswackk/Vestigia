@@ -1,0 +1,134 @@
+# 
+# Wavefront material file
+# Converted by the DEEP Exploration  Deep Exploration 6.5 x64 6.5.0.9182
+# Right Hemisphere, LTD
+# http://www.righthemisphere.com/
+# 
+
+newmtl Material__5
+Ka 0.27451 0.360784 0.537255
+Kd 0.27451 0.360784 0.537255
+Ks 0.9 0.9 0.9
+illum 2
+Ns 16
+map_Kd 
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl Material__4
+Ka 0.941177 0.941177 0.941177
+Kd 0.941177 0.941177 0.941177
+Ks 0.9 0.9 0.9
+illum 2
+Ns 22.6274
+map_Kd 
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl Material__12
+Ka 0.501961 0.501961 0.501961
+Kd 0.501961 0.501961 0.501961
+Ks 0.9 0.9 0.9
+illum 2
+Ns 128
+map_Kd 
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl Material__15
+Ka 0.745098 0.741176 0.717647
+Kd 0.745098 0.741176 0.717647
+Ks 0.9 0.9 0.9
+illum 2
+Ns 128
+map_Kd 
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl back
+Ka 0.811765 0.807843 0.784314
+Kd 0.811765 0.807843 0.784314
+Ks 0.9 0.9 0.9
+illum 2
+Ns 147.033
+map_Kd 
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl front
+Ka 0.152941 0.643137 0.603922
+Kd 0.152941 0.643137 0.603922
+Ks 0.9 0.9 0.9
+illum 2
+Ns 724.077
+map_Kd 
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl wind_turbine
+Ka 0.152941 0.643137 0.603922
+Kd 0.152941 0.643137 0.603922
+Ks 0.9 0.9 0.9
+illum 2
+Ns 724.077
+map_Kd 
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl Material__50
+Ka 0.117647 0.14902 0.203922
+Kd 0.117647 0.14902 0.203922
+Ks 0.9 0.9 0.9
+illum 2
+Ns 16
+map_Kd 
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 

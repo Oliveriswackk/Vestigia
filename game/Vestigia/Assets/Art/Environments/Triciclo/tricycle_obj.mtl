@@ -1,0 +1,93 @@
+newmtl Lightglass_insideSG
+illum 4
+Kd 0.86 0.86 0.86
+Ka 0.00 0.00 0.00
+Tf 0.08 0.08 0.08
+Ni 1.00
+Ks 0.94 0.94 0.94
+newmtl anisotropic2SG
+illum 4
+Kd 0.00 0.00 0.00
+Ka 0.00 0.00 0.00
+Tf 1.00 1.00 1.00
+map_Kd chain_diff.tga
+bump chain_bump.tga -bm -0.1
+Ni 1.00
+Ks 1.00 1.00 1.00
+newmtl blinn3SG
+illum 4
+Kd 0.00 0.00 0.00
+Ka 0.00 0.00 0.00
+Tf 1.00 1.00 1.00
+Ni 1.00
+Ks 0.00 0.00 0.00
+newmtl blinn4SG
+illum 4
+Kd 0.86 0.86 0.86
+Ka 0.00 0.00 0.00
+Tf 0.43 0.43 0.43
+Ni 1.00
+Ks 0.94 0.94 0.94
+newmtl blinn5SG
+illum 4
+Kd 0.00 0.00 0.00
+Ka 0.00 0.00 0.00
+Tf 1.00 1.00 1.00
+map_Kd leather02.tga
+bump leather02_bump.tga -bm 0.3
+Ni 1.00
+Ks 0.50 0.50 0.50
+newmtl blinn7SG
+illum 4
+Kd 0.00 0.00 0.00
+Ka 0.00 0.00 0.00
+Tf 1.00 1.00 1.00
+map_Kd metal_diff.tga
+bump metal_bump.tga -bm 0.2
+Ni 1.00
+Ks 0.50 0.50 0.50
+newmtl blinn8SG
+illum 4
+Kd 0.00 0.00 0.00
+Ka 0.00 0.00 0.00
+Tf 1.00 1.00 1.00
+map_Kd metal2.tga
+Ni 1.00
+Ks 0.50 0.50 0.50
+newmtl blinn9SG
+illum 4
+Kd 0.12 0.10 0.06
+Ka 0.00 0.00 0.00
+Tf 1.00 1.00 1.00
+Ni 1.00
+Ks 0.50 0.50 0.50
+newmtl bolt:blinn1SG
+illum 4
+Kd 0.00 0.00 0.00
+Ka 0.00 0.00 0.00
+Tf 1.00 1.00 1.00
+map_Kd brass.tga
+Ni 1.00
+Ks 1.00 1.00 1.00
+newmtl file3SG
+illum 4
+Kd 0.00 0.00 0.00
+Ka 0.00 0.00 0.00
+Tf 1.00 1.00 1.00
+map_Kd rubber.tga
+bump wheel_bump.tga -bm 0.1
+Ni 1.00
+Ks 0.26 0.26 0.26
+newmtl initialShadingGroup
+illum 4
+Kd 1.00 1.00 1.00
+Ka 0.00 0.00 0.00
+Tf 1.00 1.00 1.00
+Ni 1.00
+newmtl surfaceShader1SG
+illum 4
+Kd 1.00 1.00 1.00
+Ka 0.00 0.00 0.00
+Tf 0.63 0.63 0.63
+Ni 1.00
+Ks 1.00 1.00 1.00

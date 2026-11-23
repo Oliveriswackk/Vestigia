@@ -1,0 +1,99 @@
+# 3ds Max Wavefront OBJ Exporter v0.97b - (c)2007 guruware
+# File Created: 10.02.2021 18:01:31
+
+newmtl Banker_Lamp_Mat
+	Ns 10.0000
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 0.5880 0.5880 0.5880
+	Kd 0.5000 0.5000 0.5000
+	Ks 0.0000 0.0000 0.0000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka Banker_Lamp_Diffuse.png
+	map_Kd Banker_Lamp_Diffuse.png
+	map_Ks Banker_Lamp_Specular.png
+	map_bump Map__59_Normal_Bump.tga
+
+newmtl Cover_Mat
+	Ns 10.0000
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 0.5880 0.5880 0.5880
+	Kd 0.5000 0.5000 0.5000
+	Ks 0.0000 0.0000 0.0000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka Banker_Cover_Diffuse.png
+	map_Kd Banker_Cover_Diffuse.png
+	map_Ks Banker_Cover_Specular.png
+	map_bump Map__63_Normal_Bump.tga
+
+newmtl Cage_Mat_01
+	Ns 10.0000
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 0.5880 0.5880 0.5880
+	Kd 0.5000 0.5000 0.5000
+	Ks 0.0000 0.0000 0.0000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka Light_Cage_02_Diffuse.png
+	map_Kd Light_Cage_02_Diffuse.png
+	map_Ks Light_Cage_02_Specular.png
+	map_bump Map__55_Normal_Bump.tga
+
+newmtl Bulb_Glass_Mat_02
+	Ns 10.0000
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 0.5880 0.5880 0.5880
+	Kd 0.5000 0.5000 0.5000
+	Ks 0.0000 0.0000 0.0000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka Bulb_Glass_02_diffuse.png
+	map_Kd Bulb_Glass_02_diffuse.png
+	map_Ks Bulb_Glass_02_Specular.png
+	map_d Bulb_Glass_02_Refraction.png
+	map_bump Map__35_Normal_Bump.tga
+
+newmtl Bulb_Light_Mat_02
+	Ns 10.0000
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 0.5880 0.5880 0.5880
+	Kd 0.5000 0.5000 0.5000
+	Ks 0.0000 0.0000 0.0000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka Bulb_Light_diffuse.png
+	map_Kd Bulb_Light_diffuse.png
+	map_Ks Bulb_Light_Specular.png
+	map_bump Map__48_Normal_Bump.tga
+
+newmtl Bulb_Mat_02
+	Ns 10.0000
+	Ni 1.5000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 0.5880 0.5880 0.5880
+	Kd 0.5000 0.5000 0.5000
+	Ks 0.0000 0.0000 0.0000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka Bulb_02_Diffuse.png
+	map_Kd Bulb_02_Diffuse.png
+	map_Ks Bulb_02_Specular.png
+	map_bump Map__39_Normal_Bump.tga

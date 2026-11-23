@@ -1,0 +1,19 @@
+# 3ds Max Wavefront OBJ Exporter v0.97b - (c)2007 guruware
+# File Created: 11.04.2022 13:33:30
+
+newmtl Grate_Type_II_Blend_Material
+	Ns 100.0000
+	Ni 16.0000
+	d 1.0000
+	Tr 0.0000
+	Tf 1.0000 1.0000 1.0000 
+	illum 2
+	Ka 0.5880 0.5880 0.5880
+	Kd 0.5000 0.5000 0.5000
+	Ks 0.0000 0.0000 0.0000
+	Ke 0.0000 0.0000 0.0000
+	map_Ka textures/Grate_Type_II_Diffuse.png
+	map_Kd textures/Grate_Type_II_Diffuse.png
+	map_Ks textures/Grate_Type_II_Specular.png
+	map_bump textures/Grate_Type_II_Normal.png
+	bump textures/Grate_Type_II_Normal.png

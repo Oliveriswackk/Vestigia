@@ -1,0 +1,85 @@
+# 3ds Max Wavefront OBJ Exporter v0.97b - (c)2007 guruware
+# File Created: 19.12.2016 15:00:48
+
+newmtl Dielectrics
+	Ns 10.000000
+	Ni 1.500000
+	d 1.000000
+	Tr 0.000000
+	Tf 1.000000 1.000000 1.000000 
+	illum 2
+	Ka 0.588000 0.588000 0.588000
+	Kd 0.500000 0.500000 0.500000
+	Ks 0.000000 0.000000 0.000000
+	Ke 0.000000 0.000000 0.000000
+	map_Ka Oudin_Resonator_Diffuse.png
+	map_Kd Oudin_Resonator_Diffuse.png
+	map_bump -bm 0.300000 Map__0_Normal_Bump.png
+
+newmtl Metal
+	Ns 10.000000
+	Ni 1.500000
+	d 1.000000
+	Tr 0.000000
+	Tf 1.000000 1.000000 1.000000 
+	illum 2
+	Ka 0.588000 0.588000 0.588000
+	Kd 0.500000 0.500000 0.500000
+	Ks 0.000000 0.000000 0.000000
+	Ke 0.000000 0.000000 0.000000
+	map_Ka Oudin_Resonator_Diffuse.png
+	map_Kd Oudin_Resonator_Diffuse.png
+	map_bump -bm 0.300000 Map__0_Normal_Bump.png
+
+newmtl wire_087224198
+	Ns 32
+	d 1
+	Tr 0
+	Tf 1 1 1
+	illum 2
+	Ka 0.341176 0.878431 0.776471
+	Kd 0.341176 0.878431 0.776471
+	Ks 0.350000 0.350000 0.350000
+
+newmtl Glass
+	Ns 10.000000
+	Ni 1.500000
+	d 0.117647
+	Tr 0.882353
+	Tf 0.117647 0.117647 0.117647 
+	illum 2
+	Ka 0.588000 0.588000 0.588000
+	Kd 0.156863 0.156863 0.156863
+	Ks 0.000000 0.000000 0.000000
+	Ke 0.000000 0.000000 0.000000
+	map_d Mix_Mix.png
+
+newmtl wire_134110008
+	Ns 32
+	d 1
+	Tr 0
+	Tf 1 1 1
+	illum 2
+	Ka 0.525490 0.431373 0.031373
+	Kd 0.525490 0.431373 0.031373
+	Ks 0.350000 0.350000 0.350000
+
+newmtl wire_143224087
+	Ns 32
+	d 1
+	Tr 0
+	Tf 1 1 1
+	illum 2
+	Ka 0.560784 0.878431 0.341176
+	Kd 0.560784 0.878431 0.341176
+	Ks 0.350000 0.350000 0.350000
+
+newmtl wire_229166215
+	Ns 32
+	d 1
+	Tr 0
+	Tf 1 1 1
+	illum 2
+	Ka 0.898039 0.650980 0.843137
+	Kd 0.898039 0.650980 0.843137
+	Ks 0.350000 0.350000 0.350000

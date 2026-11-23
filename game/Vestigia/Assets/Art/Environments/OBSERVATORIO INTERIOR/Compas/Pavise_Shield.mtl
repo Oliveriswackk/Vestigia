@@ -1,0 +1,70 @@
+# 
+# Wavefront material file
+# Converted by the DEEP Exploration  Deep Exploration 6.5 x64 6.5.0.9182
+# Right Hemisphere, LTD
+# http://www.righthemisphere.com/
+# 
+
+newmtl cloth_paint
+Ka 0.243137 0.670588 0.294118
+Kd 1 1 1
+Ks 0.9 0.9 0.9
+illum 2
+Ns 4
+map_Kd Paveza_diff.tga
+map_bump Paveza_specl.tga
+bump Paveza_specl.tga
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl metal
+Ka 0.945098 0.505882 0.505882
+Kd 1 1 1
+Ks 0.9 0.9 0.9
+illum 2
+Ns 4
+map_Kd Paveza_diff.tga
+map_bump Paveza_specl.tga
+bump Paveza_specl.tga
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl leather
+Ka 0.501961 0.501961 0.501961
+Kd 1 1 1
+Ks 0.9 0.9 0.9
+illum 2
+Ns 64
+map_Kd Paveza_diff.tga
+map_bump Paveza_specl.tga
+bump Paveza_specl.tga
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 
+
+newmtl Paveza
+Ka 0.243137 0.670588 0.294118
+Kd 0.243137 0.670588 0.294118
+Ks 0.9 0.9 0.9
+illum 2
+Ns 4
+map_Kd 
+map_bump 
+bump 
+map_opacity 
+map_d 
+refl 
+map_kS 
+map_kA 
+map_Ns 

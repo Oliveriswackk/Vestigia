@@ -1,0 +1,132 @@
+# Blender MTL File: 'house.blend'
+# Material Count: 12
+newmtl Chimney_Chimney.jpg
+Ns 107.843137
+Ka 0.000000 0.000000 0.000000
+Kd 0.640000 0.640000 0.640000
+Ks 0.085366 0.085366 0.085366
+Ni 1.000000
+d 1.000000
+illum 2
+map_Kd D:\Turbosquid Files\House\Chimney.jpg
+
+
+newmtl Metal
+Ns 137.254902
+Ka 0.000000 0.000000 0.000000
+Kd 0.446425 0.458656 0.434195
+Ks 0.711382 0.711382 0.711382
+Ni 1.000000
+d 1.000000
+illum 2
+
+
+newmtl concrete
+Ns 96.078431
+Ka 0.000000 0.000000 0.000000
+Kd 0.640000 0.640000 0.640000
+Ks 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 1
+map_Kd D:\\Turbosquid Files\\House\\Concrete.jpg
+
+
+newmtl concrete_Concrete
+Ns 96.078431
+Ka 0.000000 0.000000 0.000000
+Kd 0.640000 0.640000 0.640000
+Ks 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 1
+map_Kd D:\Turbosquid Files\House\Concrete.jpg
+
+
+newmtl fence
+Ns 221.568627
+Ka 0.000000 0.000000 0.000000
+Kd 0.640000 0.640000 0.640000
+Ks 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 1
+map_Kd D:\\Turbosquid Files\\House\\fencewood.jpg
+
+
+newmtl grass_grass.jpg
+Ns 86.274510
+Ka 0.000000 0.000000 0.000000
+Kd 0.640000 0.640000 0.640000
+Ks 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 1
+map_Kd D:\Turbosquid Files\House\grass.jpg
+
+
+newmtl gutter
+Ns 96.078431
+Ka 0.000000 0.000000 0.000000
+Kd 0.597323 0.545116 0.497530
+Ks 0.500000 0.500000 0.500000
+Ni 1.000000
+d 1.000000
+illum 2
+
+
+newmtl house
+Ns 149.019608
+Ka 0.000000 0.000000 0.000000
+Kd 0.640000 0.640000 0.640000
+Ks 0.003919 0.003919 0.003919
+Ni 1.000000
+d 1.000000
+illum 2
+map_Kd D:\\Turbosquid Files\\House\\house.jpg
+
+
+newmtl house_house
+Ns 149.019608
+Ka 0.000000 0.000000 0.000000
+Kd 0.640000 0.640000 0.640000
+Ks 0.003919 0.003919 0.003919
+Ni 1.000000
+d 1.000000
+illum 2
+map_Kd D:\Turbosquid Files\House\house.jpg
+
+
+newmtl roof
+Ns 149.019608
+Ka 0.000000 0.000000 0.000000
+Kd 0.640000 0.640000 0.640000
+Ks 0.134146 0.134146 0.134146
+Ni 1.000000
+d 1.000000
+illum 2
+map_Kd D:\\Turbosquid Files\\House\\Roof.jpg
+
+
+newmtl roof_Roof
+Ns 149.019608
+Ka 0.000000 0.000000 0.000000
+Kd 0.640000 0.640000 0.640000
+Ks 0.134146 0.134146 0.134146
+Ni 1.000000
+d 1.000000
+illum 2
+map_Kd D:\Turbosquid Files\House\Roof.jpg
+
+
+newmtl wood
+Ns 221.568627
+Ka 0.000000 0.000000 0.000000
+Kd 0.640000 0.640000 0.640000
+Ks 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 1
+map_Kd D:\\Turbosquid Files\\House\\wood.jpg
+
+
