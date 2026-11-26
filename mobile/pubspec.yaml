@@ -60,6 +60,17 @@ flutter:
   # Fotografía provisional del puzzle de la fotografía (reemplazable).
   assets:
     - assets/photos/
+    - assets/textures/
+
+  # Letras de la libreta (Google Fonts, OFL; ver assets/CREDITS.md).
+  fonts:
+    - family: Caveat
+      fonts:
+        # Variable: el grosor (400-700) se elige con FontVariation('wght').
+        - asset: assets/fonts/Caveat-Variable.ttf
+    - family: SpecialElite
+      fonts:
+        - asset: assets/fonts/SpecialElite-Regular.ttf
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

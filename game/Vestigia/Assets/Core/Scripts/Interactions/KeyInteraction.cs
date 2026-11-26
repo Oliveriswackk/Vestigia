@@ -95,6 +95,10 @@ public class KeyInteraction : MonoBehaviour
         if (audioSource != null && sonidoCollectMagic != null)
             audioSource.PlayOneShot(sonidoCollectMagic);
 
+        // Queda anotada en la libreta del teléfono.
+        if (VestigiaCliente.Instance != null)
+            VestigiaCliente.Instance.Descubrir("llave_faro");
+
         Debug.Log("Llave recogida. Ahora puedes abrir la reja.");
     }
 }

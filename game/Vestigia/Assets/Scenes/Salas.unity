@@ -327,7 +327,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SalasUI
   cliente: {fileID: 0}
-  escenaIntroduccion: Scene_01
+  escenaIntroduccion: Escena1_Intro
   columnas: 2
   anchoMaximoTarjeta: 480
   anchoMinimoTarjeta: 260

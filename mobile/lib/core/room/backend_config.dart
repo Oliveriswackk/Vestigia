@@ -10,8 +10,9 @@ class BackendConfig {
 
   final String baseUrl;
 
-  String get _trimmed =>
-      baseUrl.endsWith('/') ? baseUrl.substring(0, baseUrl.length - 1) : baseUrl;
+  String get _trimmed => baseUrl.endsWith('/')
+      ? baseUrl.substring(0, baseUrl.length - 1)
+      : baseUrl;
 
   Uri rest(String path) => Uri.parse('$_trimmed$path');
 

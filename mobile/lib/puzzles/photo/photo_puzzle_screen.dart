@@ -1,15 +1,20 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
+import '../../app/notebook_style.dart';
+import '../../app/puzzle_session.dart';
 import '../../app/puzzle_top_bar.dart';
 import '../../app/vestigia_theme.dart';
 import '../../core/haptics.dart';
+import '../../core/room/room_connection.dart';
 import 'photo_assembly.dart';
 import 'photo_config.dart';
 import 'photo_layout.dart';
 import 'torn_photo.dart';
+import 'widgets/desk_clutter.dart';
 import 'widgets/photo_back_view.dart';
 import 'widgets/photo_piece_view.dart';
 
@@ -21,11 +26,13 @@ class PhotoPuzzleScreen extends StatefulWidget {
     this.config = const PhotoPuzzleConfig(),
     this.hapticsFactory,
     this.random,
+    this.room,
   });
 
   final PhotoPuzzleConfig config;
   final Haptics Function()? hapticsFactory;
   final Random? random;
+  final RoomConnection? room;
 
   static const surfaceKey = Key('photo-surface');
   static const restartKey = Key('photo-restart');
@@ -56,6 +63,13 @@ class PhotoPuzzleScreenState extends State<PhotoPuzzleScreen>
   PhotoLayout? _layout;
   Size? _surfacePixels;
   DragSession? _drag;
+  List<ClutterItem> _clutter = const [];
+
+  /// Apilado de la mesa, de abajo hacia arriba: ids de pedazo (`int`) y
+  /// estorbos ([ClutterItem]).
+  final List<Object> _stack = [];
+  ClutterItem? _clutterDrag;
+  Offset _clutterGrip = Offset.zero;
   Offset _flipStart = Offset.zero;
   bool _precached = false;
 
@@ -65,12 +79,21 @@ class PhotoPuzzleScreenState extends State<PhotoPuzzleScreen>
   @visibleForTesting
   PhotoLayout? get layout => _layout;
 
+  @visibleForTesting
+  List<ClutterItem> get clutter => List.unmodifiable(_clutter);
+
+  /// Estorbo visible bajo [point] (en anchos de foto) o `null`.
+  @visibleForTesting
+  ClutterItem? clutterAt(Offset point) => _clutterAt(point);
+
   PhotoPuzzleConfig get _config => widget.config;
 
   @override
   void initState() {
     super.initState();
     _haptics = (widget.hapticsFactory ?? PlatformHaptics.new)();
+    final room = widget.room;
+    if (room != null) unawaited(room.reportPuzzle('photo', 'iniciado'));
   }
 
   @override
@@ -103,6 +126,7 @@ class PhotoPuzzleScreenState extends State<PhotoPuzzleScreen>
         tolerance: layout.toleranceFor(_config),
         random: widget.random,
       );
+      _scatterClutter();
       // El texto inferior se construye antes que la superficie; se actualiza
       // en cuanto existe la partida.
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -110,32 +134,110 @@ class PhotoPuzzleScreenState extends State<PhotoPuzzleScreen>
       });
     } else {
       assembly.resize(layout.surface);
+      final surface = layout.surface;
+      for (final item in _clutter) {
+        item.center = Offset(
+          item.center.dx.clamp(0.0, surface.width),
+          item.center.dy.clamp(0.0, surface.height),
+        );
+      }
     }
+  }
+
+  /// Reparte los estorbos de forma determinista a partir de la semilla.
+  void _scatterClutter() {
+    final assembly = _assembly!;
+    final seed = (widget.random ?? Random(7)).nextInt(1 << 30);
+    _clutter = scatterClutter(assembly, Random(seed));
+    _clutterDrag = null;
+    _stack
+      ..clear()
+      ..addAll(assembly.zOrder)
+      ..addAll(_clutter);
+  }
+
+  ClutterItem? _clutterAt(Offset point) {
+    for (final token in _stack.reversed) {
+      if (token is ClutterItem) {
+        if (token.contains(point)) return token;
+      } else if (_assembly!.photo
+          .piece(token as int)
+          .contains(point - _assembly!.originOf(token))) {
+        return null; // Un pedazo queda por encima.
+      }
+    }
+    return null;
+  }
+
+  void _syncPieces(Set<int> raised) {
+    _stack.removeWhere((t) => t is int && raised.contains(t));
+    _stack.addAll(_assembly!.zOrder.where(raised.contains));
   }
 
   Offset _toUnits(Offset local) => local / _layout!.scale;
 
   void _onPanStart(DragStartDetails details) {
-    final session = _assembly?.beginDrag(_toUnits(details.localPosition));
-    if (session != null) setState(() => _drag = session);
+    final assembly = _assembly;
+    if (assembly == null) return;
+    final point = _toUnits(details.localPosition);
+    final item = assembly.isSolved ? null : _clutterAt(point);
+    if (item != null) {
+      setState(() {
+        _clutterDrag = item;
+        _clutterGrip = point - item.center;
+        _stack
+          ..remove(item)
+          ..add(item);
+      });
+      return;
+    }
+    final session = assembly.beginDrag(point);
+    if (session != null) {
+      setState(() {
+        _drag = session;
+        _syncPieces(assembly.membersOf(session.group));
+      });
+    }
   }
 
   void _onPanUpdate(DragUpdateDetails details) {
+    final item = _clutterDrag;
+    if (item != null) {
+      final surface = _assembly!.surface;
+      final c = _toUnits(details.localPosition) - _clutterGrip;
+      setState(
+        () => item.center = Offset(
+          c.dx.clamp(0.0, surface.width),
+          c.dy.clamp(0.0, surface.height),
+        ),
+      );
+      return;
+    }
     final session = _drag;
     if (session == null) return;
     setState(() => _assembly!.dragTo(session, _toUnits(details.localPosition)));
   }
 
   void _onPanEnd([Object? _]) {
+    if (_clutterDrag != null) {
+      setState(() => _clutterDrag = null);
+      return;
+    }
     final session = _drag;
     if (session == null) return;
     final result = _assembly!.endDrag(session);
-    setState(() => _drag = null);
+    setState(() {
+      _drag = null;
+      _syncPieces(_assembly!.membersOf(session.group));
+    });
     if (result.solved) {
       // Una sola vez por partida: endDrag solo informa la primera resolución.
       _haptics.play(HapticCue.photoSolved);
       _flipStart = _assembly!.originOf(0);
       _flip.forward(from: 0);
+      final room = widget.room;
+      if (room != null) unawaited(room.reportPuzzle('photo', 'completada'));
+      closePuzzleWhenSolved(this, inRoom: room != null);
     }
   }
 
@@ -144,6 +246,7 @@ class PhotoPuzzleScreenState extends State<PhotoPuzzleScreen>
       _drag = null;
       _flip.reset();
       _assembly?.reset();
+      if (_assembly != null) _scatterClutter();
     });
   }
 
@@ -152,35 +255,37 @@ class PhotoPuzzleScreenState extends State<PhotoPuzzleScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
-        child: Column(
-          children: [
-            PuzzleTopBar(
-              title: 'Fotografía',
-              onBack: _backToMenu,
-              onRestart: _restart,
-              restartKey: PhotoPuzzleScreen.restartKey,
-            ),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(12, 4, 12, 8),
-                child: LayoutBuilder(
-                  builder: (context, constraints) {
-                    _configure(constraints.biggest);
-                    return _surface();
-                  },
+      body: CardboardBackground(
+        child: SafeArea(
+          child: Column(
+            children: [
+              PuzzleTopBar(
+                title: 'Fotografía',
+                onBack: _backToMenu,
+                onRestart: widget.room == null ? _restart : null,
+                restartKey: PhotoPuzzleScreen.restartKey,
+              ),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(12, 4, 12, 8),
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      _configure(constraints.biggest);
+                      return _surface();
+                    },
+                  ),
                 ),
               ),
-            ),
-            AnimatedBuilder(
-              animation: _flip,
-              builder: (context, _) => _Caption(
-                assembly: _assembly,
-                flipDone: _flip.isCompleted,
-                coordinatePart: _config.coordinatePart,
+              AnimatedBuilder(
+                animation: _flip,
+                builder: (context, _) => _Caption(
+                  assembly: _assembly,
+                  flipDone: _flip.isCompleted,
+                  coordinatePart: _config.coordinatePart,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -217,19 +322,38 @@ class PhotoPuzzleScreenState extends State<PhotoPuzzleScreen>
             child: Stack(
               children: [
                 if (!assembly.isSolved)
-                  for (final id in assembly.zOrder)
-                    Positioned(
-                      left: assembly.positionOf(id).dx * scale,
-                      top: assembly.positionOf(id).dy * scale,
-                      child: _pieceView(id, lifted: dragged.contains(id)),
-                    )
-                else
+                  for (final token in _stack)
+                    if (token is ClutterItem)
+                      _clutterView(token, scale)
+                    else
+                      Positioned(
+                        left: assembly.positionOf(token as int).dx * scale,
+                        top: assembly.positionOf(token).dy * scale,
+                        child: _pieceView(
+                          token,
+                          lifted: dragged.contains(token),
+                        ),
+                      )
+                else ...[
+                  for (final item in _clutter) _clutterView(item, scale),
                   _flippingPhoto(assembly, scale),
+                ],
               ],
             ),
           ),
         ),
       ),
+    );
+  }
+
+  Widget _clutterView(ClutterItem item, double scale) {
+    final w = item.size.width * scale;
+    final h = item.size.height * scale;
+    return Positioned(
+      key: ValueKey('photo-clutter-${item.id}'),
+      left: item.center.dx * scale - w / 2,
+      top: item.center.dy * scale - h / 2,
+      child: ClutterView(item: item, scale: scale),
     );
   }
 

@@ -8,6 +8,9 @@ import 'room_api.dart';
 import 'room_channel.dart';
 import 'room_models.dart';
 
+/// Prefijo de los descubrimientos con los que el juego abre un puzzle.
+const openPuzzlePrefix = 'abrir_';
+
 enum RoomPhase { idle, joining, connecting, connected, reconnecting, closed }
 
 enum CloseAction { reconnect, endSession }
@@ -75,6 +78,13 @@ class RoomConnection extends ChangeNotifier {
   int _socketGeneration = 0;
   int _stateRequest = 0;
   bool _disposed = false;
+  final _puzzleOpened = StreamController<String>.broadcast();
+
+  /// Id del puzzle que el juego pide abrir en el teléfono. El juego lo
+  /// pide con el descubrimiento `abrir_<puzzle>` en el momento de la
+  /// historia en que el puzzle empieza (no antes: p. ej. la foto espera a
+  /// que Jannette termine de hablar).
+  Stream<String> get puzzleOpened => _puzzleOpened.stream;
 
   RoomPhase get phase => _phase;
   String? get code => _code;
@@ -178,6 +188,27 @@ class RoomConnection extends ChangeNotifier {
     }
   }
 
+  /// Avisa al juego (vía servidor) el avance de un puzzle: `iniciado`,
+  /// `sintonizada` o `completada`. Un fallo solo se anota en el registro.
+  Future<void> reportPuzzle(String puzzle, String key) async {
+    final code = _code;
+    final token = _token;
+    if (code == null || token == null || !inRoom) return;
+    final session = _session;
+    try {
+      await api.reportPuzzle(code, token, puzzle, key);
+      if (_disposed || session != _session) return;
+      _addLog('Aviso enviado: $puzzle $key');
+    } on RoomApiException catch (e) {
+      if (_disposed || session != _session) return;
+      _addLog('No se pudo avisar $puzzle: ${e.message}');
+    } on NoConnectionException {
+      if (_disposed || session != _session) return;
+      _addLog('Sin red al avisar $puzzle');
+    }
+    _notify();
+  }
+
   Future<void> _open() async {
     _release();
     final generation = _socketGeneration;
@@ -274,9 +305,15 @@ class RoomConnection extends ChangeNotifier {
         _notify();
         unawaited(refresh());
       case 'descubrimiento.nuevo':
-        _addLog(
-          'Descubrimiento ${payload['clave']} (${payload['origen']})',
-        );
+        _addLog('Descubrimiento ${payload['clave']} (${payload['origen']})');
+        final key = payload['clave'];
+        if (key is String && key.startsWith(openPuzzlePrefix)) {
+          final puzzle = key.substring(openPuzzlePrefix.length);
+          // Un puzzle ya resuelto no se vuelve a abrir.
+          if (_snapshot?.puzzles[puzzle] != 'resuelto') {
+            _puzzleOpened.add(puzzle);
+          }
+        }
         _notify();
         unawaited(refresh());
       case 'escena.cambiada':
@@ -324,6 +361,7 @@ class RoomConnection extends ChangeNotifier {
   @override
   void dispose() {
     _disposed = true;
+    _puzzleOpened.close();
     _retryTimer?.cancel();
     _release();
     super.dispose();

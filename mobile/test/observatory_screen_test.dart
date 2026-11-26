@@ -1,9 +1,11 @@
+import 'package:radio_coordenadas/app/puzzle_session.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:radio_coordenadas/app/vestigia_app.dart';
+import 'support/practice_app.dart';
+import 'package:radio_coordenadas/app/vestigia_theme.dart';
 import 'package:radio_coordenadas/core/haptics.dart';
 import 'package:radio_coordenadas/menu/puzzle_entry.dart';
 import 'package:radio_coordenadas/puzzles/observatory/observatory_game.dart';
@@ -11,6 +13,7 @@ import 'package:radio_coordenadas/puzzles/observatory/observatory_screen.dart';
 import 'package:radio_coordenadas/puzzles/observatory/orientation_source.dart';
 
 import 'support/fakes.dart';
+import 'support/room_fakes.dart';
 import 'support/visual_verification.dart';
 
 class FakeOrientation implements OrientationSource {
@@ -30,13 +33,16 @@ class FakeOrientation implements OrientationSource {
 }
 
 class ObservatoryHarness {
+  ObservatoryHarness({this.room});
+
+  final RoomHarness? room;
   final orientation = FakeOrientation();
   final haptics = FakeHaptics();
   final boundary = GlobalKey();
 
   Widget app() => RepaintBoundary(
     key: boundary,
-    child: VestigiaApp(
+    child: practiceApp(
       puzzles: [
         PuzzleEntry(
           id: 'observatory',
@@ -46,6 +52,7 @@ class ObservatoryHarness {
           builder: (_) => ObservatoryScreen(
             orientationFactory: () => orientation,
             hapticsFactory: () => haptics,
+            room: room?.connection,
           ),
         ),
       ],
@@ -88,6 +95,15 @@ class ObservatoryHarness {
   Future<void> snapshot(WidgetTester tester, String name) async {
     await captureScreen(tester, find.byKey(boundary), name);
   }
+}
+
+Future<RoomHarness> joinedRoom(WidgetTester tester) async {
+  final room = RoomHarness();
+  await tester.runAsync(() async {
+    await room.connection.join('TAPALPA');
+    await pumpEventQueue();
+  });
+  return room;
 }
 
 ObservatoryGame gameOf(WidgetTester tester) =>
@@ -251,5 +267,69 @@ void main() {
     expect(gameOf(tester).phase, ObservatoryPhase.solved);
     await harness.snapshot(tester, 'observatorio-320-magnetar');
     expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('avisa al juego: iniciado al abrir y completada al revelar', (
+    tester,
+  ) async {
+    usePhoneScreen(tester);
+    final room = await joinedRoom(tester);
+    final harness = ObservatoryHarness(room: room);
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: buildVestigiaTheme(),
+        home: ObservatoryScreen(
+          orientationFactory: () => harness.orientation,
+          hapticsFactory: () => harness.haptics,
+          room: room.connection,
+        ),
+      ),
+    );
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(room.api.reported, ['observatory:iniciado']);
+    await harness.calibrate(tester);
+    await harness.hold(tester, 21);
+    expect(gameOf(tester).phase, ObservatoryPhase.solved);
+    await pumpFrames(tester, const Duration(seconds: 3));
+    expect(room.api.reported, [
+      'observatory:iniciado',
+      'observatory:completada',
+    ]);
+  });
+
+  testWidgets('en partida: sin reiniciar y se cierra sola al revelar', (
+    tester,
+  ) async {
+    usePhoneScreen(tester);
+    final room = await joinedRoom(tester);
+    final harness = ObservatoryHarness(room: room);
+    await tester.pumpWidget(
+      MaterialApp(theme: buildVestigiaTheme(), home: const Text('menu')),
+    );
+    unawaited(
+      tester
+          .state<NavigatorState>(find.byType(Navigator))
+          .push(
+            MaterialPageRoute<void>(
+              builder: (_) => ObservatoryScreen(
+                orientationFactory: () => harness.orientation,
+                hapticsFactory: () => harness.haptics,
+                room: room.connection,
+              ),
+            ),
+          ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(find.byKey(ObservatoryScreen.restartKey), findsNothing);
+    await harness.calibrate(tester);
+    await harness.hold(tester, 21);
+    expect(gameOf(tester).phase, ObservatoryPhase.solved);
+    expect(find.text('Repetir'), findsNothing);
+    expect(find.text('Volver al menú'), findsNothing);
+    await tester.pump(puzzleAutoCloseDelay);
+    await tester.pumpAndSettle();
+    expect(find.byType(ObservatoryScreen), findsNothing);
+    expect(find.text('menu'), findsOneWidget);
   });
 }

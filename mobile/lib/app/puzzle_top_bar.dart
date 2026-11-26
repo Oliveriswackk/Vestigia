@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'notebook_style.dart';
 import 'vestigia_theme.dart';
 
 /// Barra común de los puzzles: volver al menú, título y nueva partida
@@ -9,7 +10,7 @@ class PuzzleTopBar extends StatelessWidget {
     super.key,
     required this.title,
     required this.onBack,
-    required this.onRestart,
+    this.onRestart,
     this.restartKey,
     this.restartTooltip = 'Nueva partida',
     this.restartIcon = Icons.refresh,
@@ -17,7 +18,9 @@ class PuzzleTopBar extends StatelessWidget {
 
   final String title;
   final VoidCallback onBack;
-  final VoidCallback onRestart;
+
+  /// `null` oculta el botón (en una partida no se repite el puzzle).
+  final VoidCallback? onRestart;
   final Key? restartKey;
   final String restartTooltip;
   final IconData restartIcon;
@@ -38,18 +41,22 @@ class PuzzleTopBar extends StatelessWidget {
               title,
               textAlign: TextAlign.center,
               style: const TextStyle(
+                fontFamily: NotebookFonts.typewriter,
                 fontSize: 18,
                 letterSpacing: 1,
                 color: VestigiaColors.cream,
               ),
             ),
           ),
-          IconButton(
-            key: restartKey,
-            icon: Icon(restartIcon),
-            tooltip: restartTooltip,
-            onPressed: onRestart,
-          ),
+          if (onRestart == null)
+            const SizedBox(width: 48)
+          else
+            IconButton(
+              key: restartKey,
+              icon: Icon(restartIcon),
+              tooltip: restartTooltip,
+              onPressed: onRestart,
+            ),
         ],
       ),
     );

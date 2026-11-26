@@ -24,6 +24,17 @@ Future<void> loadVerificationFonts() async {
       await loader.load();
     }
   }
+  // Letras de la libreta, para que las capturas usen las reales.
+  for (final (family, files) in [
+    ('Caveat', ['assets/fonts/Caveat-Variable.ttf']),
+    ('SpecialElite', ['assets/fonts/SpecialElite-Regular.ttf']),
+  ]) {
+    final loader = FontLoader(family);
+    for (final file in files) {
+      loader.addFont(File(file).readAsBytes().then(ByteData.sublistView));
+    }
+    await loader.load();
+  }
   await (FontLoader(
     'MaterialIcons',
   )..addFont(rootBundle.load('fonts/MaterialIcons-Regular.otf'))).load();

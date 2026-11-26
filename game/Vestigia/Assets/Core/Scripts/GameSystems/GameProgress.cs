@@ -65,6 +65,55 @@ public class GameProgress : MonoBehaviour
         LoadProgress();
     }
 
+    // ==========================================
+    // NUEVA PARTIDA
+    // ==========================================
+
+    // Empieza una historia desde cero: borra el guardado en disco y,
+    // si el objeto ya existe en esta sesión, su estado en memoria.
+    // Se usa al crear una sala nueva; sirve también en builds.
+    public static void NuevaPartida()
+    {
+        string ruta = Path.Combine(
+            Application.persistentDataPath,
+            "vestigia_save.json"
+        );
+
+        try
+        {
+            if (File.Exists(ruta))
+                File.Delete(ruta);
+        }
+        catch (Exception exception)
+        {
+            Debug.LogError(
+                "GameProgress: No se pudo borrar el guardado: " +
+                exception.Message
+            );
+        }
+
+        if (Instance != null)
+            Instance.ReiniciarEstado();
+
+        Debug.Log("GameProgress: nueva partida.");
+    }
+
+    private void ReiniciarEstado()
+    {
+        radio_sintonizada = false;
+
+        fragmento_planta1 = false;
+        fragmento_planta2 = false;
+        fragmento_planta3 = false;
+
+        palanca_recogida = false;
+        puzzle_completado = false;
+
+        lente_limpio = false;
+        obs_encontrado = false;
+        regalo_yaro_entregado = false;
+    }
+
     public void SetRadioSintonizada()
     {
         if (radio_sintonizada) return;
@@ -232,16 +281,7 @@ public class GameProgress : MonoBehaviour
     [ContextMenu("DESARROLLO: REINICIAR PARTIDA")]
     public void ResetProgress()
     {
-        radio_sintonizada = false;
-        fragmento_planta1 = false;
-        fragmento_planta2 = false;
-        fragmento_planta3 = false;
-        palanca_recogida = false;
-        puzzle_completado = false;
-        lente_limpio = false;
-        obs_encontrado = false;
-        regalo_yaro_entregado = false;
-
+        ReiniciarEstado();
         SaveProgress();
 
         Debug.Log(

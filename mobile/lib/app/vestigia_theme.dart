@@ -38,11 +38,18 @@ ThemeData buildVestigiaTheme() {
     ),
     filledButtonTheme: FilledButtonThemeData(
       style: FilledButton.styleFrom(
-        backgroundColor: VestigiaColors.brass,
-        foregroundColor: VestigiaColors.background,
+        // Etiqueta de papel: el mismo material que la libreta.
+        backgroundColor: const Color(0xFFE6D9B8),
+        foregroundColor: const Color(0xFF26303F),
         minimumSize: const Size(64, 52),
-        textStyle: const TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        elevation: 3,
+        shadowColor: Colors.black,
+        textStyle: const TextStyle(
+          fontFamily: 'SpecialElite',
+          fontSize: 16,
+          letterSpacing: 1.5,
+        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
       ),
     ),
     outlinedButtonTheme: OutlinedButtonThemeData(
@@ -50,8 +57,12 @@ ThemeData buildVestigiaTheme() {
         foregroundColor: VestigiaColors.cream,
         side: const BorderSide(color: VestigiaColors.brassDark, width: 1.5),
         minimumSize: const Size(64, 52),
-        textStyle: const TextStyle(fontSize: 17),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        textStyle: const TextStyle(
+          fontFamily: 'SpecialElite',
+          fontSize: 16,
+          letterSpacing: 1.2,
+        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
       ),
     ),
     iconButtonTheme: IconButtonThemeData(

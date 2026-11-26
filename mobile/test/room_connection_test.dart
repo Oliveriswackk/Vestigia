@@ -96,6 +96,42 @@ void main() {
     expect(harness.connection.log.first.text, 'Puzzle radio: disponible');
   });
 
+  test('abrir_<puzzle> se anuncia en puzzleOpened; los estados no', () async {
+    final harness = await joined();
+    harness.channel.receive(authOk());
+    await pumpEventQueue();
+
+    final opened = <String>[];
+    final subscription = harness.connection.puzzleOpened.listen(opened.add);
+
+    harness.channel.receive(
+      '{"type":"puzzle.actualizado","payload":{"puzzle":"photo","estado":"disponible","datos":{}}}',
+    );
+    harness.channel.receive(
+      '{"type":"descubrimiento.nuevo","payload":{"clave":"abrir_radio","origen":"juego"}}',
+    );
+    await pumpEventQueue();
+    await subscription.cancel();
+
+    expect(opened, ['radio']);
+  });
+
+  test('reportPuzzle avisa al servidor y solo dentro de una sala', () async {
+    final harness = RoomHarness();
+    await harness.connection.reportPuzzle('radio', 'iniciado');
+    expect(harness.api.reported, isEmpty);
+
+    await harness.connection.join('TAPALPA');
+    await pumpEventQueue();
+    await harness.connection.reportPuzzle('radio', 'sintonizada');
+
+    expect(harness.api.reported, ['radio:sintonizada']);
+    expect(
+      harness.connection.log.first.text,
+      'Aviso enviado: radio sintonizada',
+    );
+  });
+
   test('sala.cerrada termina la sesión sin reconectar', () async {
     final harness = await joined();
     harness.channel.receive(authOk());

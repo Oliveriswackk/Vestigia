@@ -6,7 +6,9 @@ using System.Collections;
 
 public class PhotoFragmentInteraction : MonoBehaviour
 {
-    private const bool DEVELOP = true;
+    // En falso: las piezas solo se registran al encontrarlas (la libreta
+    // del teléfono las pega una a una).
+    private const bool DEVELOP = false;
     private static bool developProgressPrepared;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]

@@ -5,9 +5,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 
+import '../../app/notebook_style.dart';
+import '../../app/puzzle_session.dart';
 import '../../app/puzzle_top_bar.dart';
 import '../../app/vestigia_theme.dart';
 import '../../core/haptics.dart';
+import '../../core/room/room_connection.dart';
 import 'observatory_game.dart';
 import 'orientation_source.dart';
 import 'widgets/sky_view.dart';
@@ -18,11 +21,13 @@ class ObservatoryScreen extends StatefulWidget {
     this.config = const ObservatoryConfig(),
     this.orientationFactory,
     this.hapticsFactory,
+    this.room,
   });
 
   final ObservatoryConfig config;
   final OrientationSource Function()? orientationFactory;
   final Haptics Function()? hapticsFactory;
+  final RoomConnection? room;
 
   static const arKey = Key('observatory-ar');
   static const decKey = Key('observatory-dec');
@@ -63,6 +68,8 @@ class ObservatoryScreenState extends State<ObservatoryScreen>
     WidgetsBinding.instance.addObserver(this);
     _ticker = createTicker(_onFrame);
     _start();
+    final room = widget.room;
+    if (room != null) unawaited(room.reportPuzzle('observatory', 'iniciado'));
   }
 
   void _start() {
@@ -108,6 +115,11 @@ class ObservatoryScreenState extends State<ObservatoryScreen>
     if (solved) {
       _haptics.play(HapticCue.complete);
       _stop();
+      final room = widget.room;
+      if (room != null) {
+        unawaited(room.reportPuzzle('observatory', 'completada'));
+        closePuzzleWhenSolved(this, inRoom: true);
+      }
     }
     if (mounted &&
         (solved ||
@@ -190,189 +202,197 @@ class ObservatoryScreenState extends State<ObservatoryScreen>
         }
       },
       child: Scaffold(
-        body: SafeArea(
-          child: Column(
-            children: [
-              PuzzleTopBar(
-                title: 'Observatorio',
-                onBack: _back,
-                onRestart: _restart,
-                restartKey: ObservatoryScreen.restartKey,
-              ),
-              Expanded(
-                child: ListView(
-                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
-                  children: [
-                    SizedBox(
-                      height: min(MediaQuery.sizeOf(context).width - 40, 300),
-                      child: RepaintBoundary(
-                        key: ObservatoryScreen.skyKey,
-                        child: SkyView(
-                          pointing: searching || solved
-                              ? _game.pointing
-                              : const PointingSample(0, 25),
-                          revealed: solved,
+        body: CardboardBackground(
+          child: SafeArea(
+            child: Column(
+              children: [
+                PuzzleTopBar(
+                  title: 'Observatorio',
+                  onBack: _back,
+                  onRestart: widget.room == null ? _restart : null,
+                  restartKey: ObservatoryScreen.restartKey,
+                ),
+                Expanded(
+                  child: ListView(
+                    padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
+                    children: [
+                      SizedBox(
+                        height: min(MediaQuery.sizeOf(context).width - 40, 300),
+                        child: RepaintBoundary(
+                          key: ObservatoryScreen.skyKey,
+                          child: SkyView(
+                            pointing: searching || solved
+                                ? _game.pointing
+                                : const PointingSample(0, 25),
+                            revealed: solved,
+                          ),
                         ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      _paused ? 'En pausa' : _status,
-                      key: ObservatoryScreen.statusKey,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 20,
-                        color: solved
-                            ? VestigiaColors.signal
-                            : VestigiaColors.cream,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    if (phase == ObservatoryPhase.coordinates) ...[
-                      Row(
-                        children: [
-                          Expanded(
-                            child: TextField(
-                              key: ObservatoryScreen.arKey,
-                              controller: _ar,
-                              keyboardType: TextInputType.number,
-                              inputFormatters: [
-                                FilteringTextInputFormatter.digitsOnly,
-                                LengthLimitingTextInputFormatter(3),
-                              ],
-                              decoration: const InputDecoration(
-                                labelText: 'AR (°)',
-                                hintText: '000',
-                                border: OutlineInputBorder(),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 14),
-                          Expanded(
-                            child: TextField(
-                              key: ObservatoryScreen.decKey,
-                              controller: _dec,
-                              // Numeric Android keyboards do not always offer '+'.
-                              keyboardType: TextInputType.text,
-                              autocorrect: false,
-                              inputFormatters: [
-                                FilteringTextInputFormatter.allow(
-                                  RegExp(r'[+\-0-9]'),
-                                ),
-                                LengthLimitingTextInputFormatter(4),
-                              ],
-                              decoration: const InputDecoration(
-                                labelText: 'DEC (°)',
-                                hintText: '+000',
-                                border: OutlineInputBorder(),
-                              ),
-                            ),
-                          ),
-                        ],
                       ),
                       const SizedBox(height: 16),
-                      FilledButton.icon(
-                        key: ObservatoryScreen.prepareKey,
-                        onPressed: _prepare,
-                        icon: const Icon(Icons.settings),
-                        label: const Text('Preparar telescopio'),
-                      ),
-                    ],
-                    if (phase == ObservatoryPhase.calibrating) ...[
-                      const Text(
-                        'Apunta el teléfono hacia la pantalla de la PC.',
+                      Text(
+                        _paused ? 'En pausa' : _status,
+                        key: ObservatoryScreen.statusKey,
                         textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 20,
+                          color: solved
+                              ? VestigiaColors.signal
+                              : VestigiaColors.cream,
+                        ),
                       ),
-                      const SizedBox(height: 12),
-                      FilledButton.icon(
-                        key: ObservatoryScreen.calibrateKey,
-                        onPressed: _game.hasFreshSample(_now) && !_paused
-                            ? _calibrate
-                            : null,
-                        icon: const Icon(Icons.my_location),
-                        label: const Text('Calibrar'),
-                      ),
-                      if (!_game.hasFreshSample(_now))
-                        const Padding(
-                          padding: EdgeInsets.only(top: 8),
-                          child: Text(
-                            'Esperando orientación del teléfono',
-                            textAlign: TextAlign.center,
+                      const SizedBox(height: 16),
+                      if (phase == ObservatoryPhase.coordinates) ...[
+                        Row(
+                          children: [
+                            Expanded(
+                              child: TextField(
+                                key: ObservatoryScreen.arKey,
+                                controller: _ar,
+                                keyboardType: TextInputType.number,
+                                inputFormatters: [
+                                  FilteringTextInputFormatter.digitsOnly,
+                                  LengthLimitingTextInputFormatter(3),
+                                ],
+                                decoration: const InputDecoration(
+                                  labelText: 'AR (°)',
+                                  hintText: '000',
+                                  border: OutlineInputBorder(),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: TextField(
+                                key: ObservatoryScreen.decKey,
+                                controller: _dec,
+                                // Numeric Android keyboards do not always offer '+'.
+                                keyboardType: TextInputType.text,
+                                autocorrect: false,
+                                inputFormatters: [
+                                  FilteringTextInputFormatter.allow(
+                                    RegExp(r'[+\-0-9]'),
+                                  ),
+                                  LengthLimitingTextInputFormatter(4),
+                                ],
+                                decoration: const InputDecoration(
+                                  labelText: 'DEC (°)',
+                                  hintText: '+000',
+                                  border: OutlineInputBorder(),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        FilledButton.icon(
+                          key: ObservatoryScreen.prepareKey,
+                          onPressed: _prepare,
+                          icon: const Icon(Icons.settings),
+                          label: const Text('Preparar telescopio'),
+                        ),
+                      ],
+                      if (phase == ObservatoryPhase.calibrating) ...[
+                        const Text(
+                          'Apunta el teléfono hacia la pantalla de la PC.',
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 12),
+                        FilledButton.icon(
+                          key: ObservatoryScreen.calibrateKey,
+                          onPressed: _game.hasFreshSample(_now) && !_paused
+                              ? _calibrate
+                              : null,
+                          icon: const Icon(Icons.my_location),
+                          label: const Text('Calibrar'),
+                        ),
+                        if (!_game.hasFreshSample(_now))
+                          const Padding(
+                            padding: EdgeInsets.only(top: 8),
+                            child: Text(
+                              'Esperando orientación del teléfono',
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                      ],
+                      if (searching) ...[
+                        LinearProgressIndicator(
+                          value: _game.holdProgress,
+                          minHeight: 6,
+                          semanticsLabel: 'Estabilidad de la observación',
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          'AZ: ${_game.pointing.azimuth.toStringAsFixed(1)}°   ALT: ${_game.pointing.altitude.toStringAsFixed(1)}°',
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            fontFamily: 'monospace',
+                            fontSize: 13,
                           ),
                         ),
-                    ],
-                    if (searching) ...[
-                      LinearProgressIndicator(
-                        value: _game.holdProgress,
-                        minHeight: 6,
-                        semanticsLabel: 'Estabilidad de la observación',
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        'AZ: ${_game.pointing.azimuth.toStringAsFixed(1)}°   ALT: ${_game.pointing.altitude.toStringAsFixed(1)}°',
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          fontFamily: 'monospace',
-                          fontSize: 13,
+                        const SizedBox(height: 12),
+                        OutlinedButton.icon(
+                          onPressed: () =>
+                              setState(() => _game.requestCalibration()),
+                          icon: const Icon(Icons.my_location),
+                          label: const Text('Recalibrar'),
                         ),
-                      ),
-                      const SizedBox(height: 12),
-                      OutlinedButton.icon(
-                        onPressed: () =>
-                            setState(() => _game.requestCalibration()),
-                        icon: const Icon(Icons.my_location),
-                        label: const Text('Recalibrar'),
-                      ),
-                    ],
-                    if (solved) ...[
-                      const Text(
-                        'Fuente de la anomalía localizada',
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 12),
-                      FilledButton.icon(
-                        onPressed: _restart,
-                        icon: const Icon(Icons.replay),
-                        label: const Text('Repetir'),
-                      ),
-                      const SizedBox(height: 8),
-                      OutlinedButton.icon(
-                        onPressed: _back,
-                        icon: const Icon(Icons.grid_view),
-                        label: const Text('Volver al menú'),
-                      ),
-                    ],
-                    if (_error != null)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 12),
-                        child: Text(
-                          _error!,
+                      ],
+                      if (solved) ...[
+                        const Text(
+                          'Fuente de la anomalía localizada',
                           textAlign: TextAlign.center,
-                          style: const TextStyle(color: VestigiaColors.needle),
                         ),
-                      ),
-                    if (_sensorError != null) ...[
-                      Padding(
-                        padding: const EdgeInsets.only(top: 12),
-                        child: Text(
-                          _sensorError!,
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(color: VestigiaColors.needle),
+                        if (widget.room == null) ...[
+                          const SizedBox(height: 12),
+                          FilledButton.icon(
+                            onPressed: _restart,
+                            icon: const Icon(Icons.replay),
+                            label: const Text('Repetir'),
+                          ),
+                          const SizedBox(height: 8),
+                          OutlinedButton.icon(
+                            onPressed: _back,
+                            icon: const Icon(Icons.grid_view),
+                            label: const Text('Volver al menú'),
+                          ),
+                        ],
+                      ],
+                      if (_error != null)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 12),
+                          child: Text(
+                            _error!,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              color: VestigiaColors.needle,
+                            ),
+                          ),
                         ),
-                      ),
-                      TextButton.icon(
-                        onPressed: () {
-                          setState(() => _sensorError = null);
-                          _start();
-                        },
-                        icon: const Icon(Icons.refresh),
-                        label: const Text('Reintentar sensor'),
-                      ),
+                      if (_sensorError != null) ...[
+                        Padding(
+                          padding: const EdgeInsets.only(top: 12),
+                          child: Text(
+                            _sensorError!,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              color: VestigiaColors.needle,
+                            ),
+                          ),
+                        ),
+                        TextButton.icon(
+                          onPressed: () {
+                            setState(() => _sensorError = null);
+                            _start();
+                          },
+                          icon: const Icon(Icons.refresh),
+                          label: const Text('Reintentar sensor'),
+                        ),
+                      ],
                     ],
-                  ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

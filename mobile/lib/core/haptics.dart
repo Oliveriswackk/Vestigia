@@ -21,6 +21,15 @@ enum HapticCue {
 
   /// Vibración breve al completar la fotografía.
   photoSolved,
+
+  /// Libreta: una nota nueva (toque suave).
+  notebookNote,
+
+  /// Libreta: un hallazgo (pieza, llave, ficha nueva): doble toque.
+  notebookFind,
+
+  /// Libreta: un hito (coordenada, puzzle resuelto): ráfaga que remata.
+  notebookMilestone,
 }
 
 abstract class Haptics {

@@ -1,8 +1,11 @@
+import 'package:radio_coordenadas/app/puzzle_session.dart';
+import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:radio_coordenadas/app/vestigia_app.dart';
+import 'support/practice_app.dart';
+import 'package:radio_coordenadas/app/vestigia_theme.dart';
 import 'package:radio_coordenadas/core/haptics.dart';
 import 'package:radio_coordenadas/menu/puzzle_entry.dart';
 import 'package:radio_coordenadas/puzzles/lookout/lookout_config.dart';
@@ -11,30 +14,48 @@ import 'package:radio_coordenadas/puzzles/lookout/lookout_screen.dart';
 import 'package:radio_coordenadas/puzzles/lookout/widgets/lens_view.dart';
 
 import 'support/fakes.dart';
+import 'support/room_fakes.dart';
 import 'support/visual_verification.dart';
 
-const config = LookoutConfig();
+// Con los valores X/Y visibles: varias pruebas los leen.
+const config = LookoutConfig(showDebugValues: true);
 
 class LookoutHarness {
+  LookoutHarness({this.room});
+
+  final RoomHarness? room;
   final haptics = FakeHaptics();
   final boundary = GlobalKey();
 
   Widget app() => RepaintBoundary(
     key: boundary,
-    child: VestigiaApp(
+    child: practiceApp(
       puzzles: [
         PuzzleEntry(
           id: 'lookout',
           title: 'Mirador del faro',
           description: 'Prueba',
           icon: Icons.visibility,
-          builder: (_) => LookoutScreen(hapticsFactory: () => haptics),
+          builder: (_) => LookoutScreen(
+            config: config,
+            hapticsFactory: () => haptics,
+            room: room?.connection,
+          ),
         ),
       ],
     ),
   );
 
   int count(HapticCue cue) => haptics.cues.where((c) => c == cue).length;
+}
+
+Future<RoomHarness> joinedRoom(WidgetTester tester) async {
+  final room = RoomHarness();
+  await tester.runAsync(() async {
+    await room.connection.join('TAPALPA');
+    await pumpEventQueue();
+  });
+  return room;
 }
 
 Future<void> openLookout(WidgetTester tester) async {
@@ -100,7 +121,7 @@ void main() {
     tester,
   ) async {
     usePhoneScreen(tester);
-    await tester.pumpWidget(const VestigiaApp());
+    await tester.pumpWidget(practiceApp());
     expect(find.text('Mirador del faro'), findsOneWidget);
 
     await openLookout(tester);
@@ -111,7 +132,8 @@ void main() {
     );
     expect(find.byKey(LookoutScreen.xKnobKey), findsNothing);
     expect(find.byKey(LookoutScreen.yKnobKey), findsNothing);
-    expect(debugText(tester), 'X: 0.0    Y: 0.0');
+    // En la app real los valores de depuración X/Y van ocultos.
+    expect(find.textContaining('X: '), findsNothing);
     expect(find.text('Lente limpio: 0 %'), findsOneWidget);
   });
 
@@ -345,5 +367,85 @@ void main() {
       ),
     );
     expect(find.byKey(LookoutScreen.debugKey), findsNothing);
+  });
+
+  testWidgets('avisa al juego: iniciado al abrir y completada al terminar', (
+    tester,
+  ) async {
+    usePhoneScreen(tester);
+    final room = await joinedRoom(tester);
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: buildVestigiaTheme(),
+        home: LookoutScreen(
+          hapticsFactory: FakeHaptics.new,
+          room: room.connection,
+        ),
+      ),
+    );
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(room.api.reported, ['lookout:iniciado']);
+    await cleanLens(tester);
+    final game = gameOf(tester);
+    await rotateKnob(
+      tester,
+      turnFor(game.view.targetX, config.xRange),
+      knob: find.byKey(LookoutScreen.xKnobKey),
+    );
+    await rotateKnob(
+      tester,
+      turnFor(game.view.targetY, config.yRange),
+      knob: find.byKey(LookoutScreen.yKnobKey),
+    );
+    await tester.pump(const Duration(milliseconds: 400));
+    expect(room.api.reported, ['lookout:iniciado']);
+    await pumpFrames(tester, const Duration(seconds: 6));
+    expect(game.phase, LookoutPhase.solved);
+    expect(room.api.reported, ['lookout:iniciado', 'lookout:completada']);
+    await tester.pump(puzzleAutoCloseDelay);
+  });
+
+  testWidgets('en partida: sin reiniciar y se cierra sola al completar', (
+    tester,
+  ) async {
+    usePhoneScreen(tester);
+    final room = await joinedRoom(tester);
+    await tester.pumpWidget(
+      MaterialApp(theme: buildVestigiaTheme(), home: const Text('menu')),
+    );
+    unawaited(
+      tester
+          .state<NavigatorState>(find.byType(Navigator))
+          .push(
+            MaterialPageRoute<void>(
+              builder: (_) => LookoutScreen(
+                hapticsFactory: FakeHaptics.new,
+                room: room.connection,
+              ),
+            ),
+          ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(find.byKey(LookoutScreen.restartKey), findsNothing);
+    await cleanLens(tester);
+    final game = gameOf(tester);
+    await rotateKnob(
+      tester,
+      turnFor(game.view.targetX, config.xRange),
+      knob: find.byKey(LookoutScreen.xKnobKey),
+    );
+    await rotateKnob(
+      tester,
+      turnFor(game.view.targetY, config.yRange),
+      knob: find.byKey(LookoutScreen.yKnobKey),
+    );
+    await tester.pump(const Duration(milliseconds: 400));
+    await pumpFrames(tester, const Duration(seconds: 6));
+    expect(game.phase, LookoutPhase.solved);
+    await tester.pump(puzzleAutoCloseDelay);
+    await tester.pumpAndSettle();
+    expect(find.byType(LookoutScreen), findsNothing);
+    expect(find.text('menu'), findsOneWidget);
   });
 }

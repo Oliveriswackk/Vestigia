@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Networking;
+using UnityEngine.SceneManagement;
 
 public class VestigiaCliente : MonoBehaviour
 {
@@ -229,6 +230,7 @@ public class VestigiaCliente : MonoBehaviour
     private bool creandoSala;
     private bool salaCreada;
     private bool cancelandoSala;
+    private string ultimaEscenaEnviada;
 
     private string mensaje = "Conectando al backend...";
     private string estadoConexion = "Desconectado";
@@ -258,6 +260,53 @@ public class VestigiaCliente : MonoBehaviour
 
         Instance = this;
         DontDestroyOnLoad(gameObject);
+
+        SceneManager.sceneLoaded += AlCargarEscena;
+    }
+
+    // Traduce la escena de Unity a la que entiende el backend.
+    // Devuelve null para escenas que no se reportan (menú, salas...).
+    private static string EscenaBackend(string nombreEscenaUnity)
+    {
+        switch (nombreEscenaUnity)
+        {
+            case "Escena1_Intro":
+                return "introduccion";
+            case "Escena2_Pueblo":
+                return "pueblo";
+            case "Escena3_Faro":
+            case "Escena3.1_PrimerPiso":
+            case "Escena3.2_SegundoPiso":
+            case "Escena3.3_TercerPiso":
+                return "faro";
+            case "Escenario4_Observatorio":
+                return "observatorio";
+            default:
+                return null;
+        }
+    }
+
+    private void AlCargarEscena(Scene escena, LoadSceneMode modo)
+    {
+        if (modo != LoadSceneMode.Single ||
+            !salaCreada ||
+            string.IsNullOrEmpty(Codigo))
+            return;
+
+        string escenaBackend = EscenaBackend(escena.name);
+
+        if (escenaBackend == null ||
+            escenaBackend == ultimaEscenaEnviada)
+            return;
+
+        ultimaEscenaEnviada = escenaBackend;
+
+        Debug.Log(
+            "[VESTIGIA] Escena -> " + escenaBackend +
+            " (" + escena.name + ")"
+        );
+
+        StartCoroutine(CambiarEscena(escenaBackend));
     }
 
     private void Start()
@@ -288,6 +337,7 @@ public class VestigiaCliente : MonoBehaviour
     {
         if (Instance == this)
         {
+            SceneManager.sceneLoaded -= AlCargarEscena;
             DetenerWebSocket();
             Instance = null;
         }
@@ -410,6 +460,11 @@ public class VestigiaCliente : MonoBehaviour
 
                 if (status == 200)
                 {
+                    // Una respuesta correcta prueba que el backend
+                    // está disponible, aunque Start() haya retomado
+                    // una sesión guardada sin comprobarlo.
+                    backendDisponible = true;
+
                     try
                     {
                         string json = "{\"items\":" + cuerpo + "}";
@@ -484,7 +539,16 @@ public class VestigiaCliente : MonoBehaviour
             creandoSala ||
             salaCreada ||
             cancelandoSala)
+        {
+            Debug.LogWarning(
+                "[VESTIGIA] CrearSala ignorado: backendDisponible=" +
+                backendDisponible + ", creandoSala=" + creandoSala +
+                ", salaCreada=" + salaCreada +
+                ", cancelandoSala=" + cancelandoSala
+            );
+
             return;
+        }
 
         if (string.IsNullOrWhiteSpace(codigo))
             return;
@@ -677,6 +741,18 @@ public class VestigiaCliente : MonoBehaviour
             true,
             SoloErrores
         );
+    }
+
+    // Registra un descubrimiento del juego si hay sala activa.
+    // Es idempotente en el servidor, así que se puede repetir.
+    public void Descubrir(string clave)
+    {
+        if (!salaCreada || string.IsNullOrEmpty(Codigo))
+            return;
+
+        Debug.Log("[VESTIGIA] Descubrimiento -> " + clave);
+
+        StartCoroutine(RegistrarDescubrimiento(clave));
     }
 
     // =========================================================

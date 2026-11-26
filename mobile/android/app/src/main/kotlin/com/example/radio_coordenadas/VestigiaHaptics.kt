@@ -70,6 +70,17 @@ class VestigiaHaptics(context: Context) {
             "photoSolved" -> clicks(v, listOf(Click(1f), Click(1f, 80))) ||
                 predefined(v, VibrationEffect.EFFECT_DOUBLE_CLICK) ||
                 pulses(v, listOf(Click(1f), Click(1f, 80)), pulseMs = 10)
+            // Libreta: nota nueva, un toque suave.
+            "notebookNote" -> clicks(v, listOf(Click(0.55f))) ||
+                predefined(v, VibrationEffect.EFFECT_TICK) ||
+                pulses(v, listOf(Click(0.4f)), pulseMs = 6)
+            // Libreta: hallazgo, doble toque firme.
+            "notebookFind" -> playClicks(v, listOf(Click(0.85f), Click(1f, 90)))
+            // Libreta: hito, tres golpes y un remate.
+            "notebookMilestone" -> playClicks(
+                v,
+                listOf(Click(0.8f), Click(0.9f, 80), Click(1f, 80), Click(1f, 220)),
+            )
         }
     }
 

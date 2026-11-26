@@ -15,7 +15,7 @@ public class SalasUI : MonoBehaviour
     [SerializeField] private VestigiaCliente cliente;
 
     [Header("Escena")]
-    [SerializeField] private string escenaIntroduccion = "Scene_01";
+    [SerializeField] private string escenaIntroduccion = "Escena1_Intro";
 
     // =========================================================
     // PALETA DE COLORES
@@ -1788,6 +1788,9 @@ public class SalasUI : MonoBehaviour
         }
 
         partidaIniciada = true;
+
+        // Sala nueva = historia nueva: sin progreso de partidas previas.
+        GameProgress.NuevaPartida();
 
         Debug.Log(
             "[VESTIGIA] Iniciando cinemática: " +

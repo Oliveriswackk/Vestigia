@@ -32,6 +32,18 @@ class FakeRoomApi implements RoomApi {
     return token;
   }
 
+  final reported = <String>[];
+
+  @override
+  Future<void> reportPuzzle(
+    String code,
+    String token,
+    String puzzle,
+    String key,
+  ) async {
+    reported.add('$puzzle:$key');
+  }
+
   @override
   Future<RoomSnapshot> state(String code, String token) async {
     stateCalls++;

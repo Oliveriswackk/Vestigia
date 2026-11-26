@@ -45,7 +45,9 @@ class RoomSnapshot {
     final rawPuzzles = json['puzzles'];
     if (rawPuzzles is List) {
       for (final item in rawPuzzles) {
-        if (item is Map && item['puzzle'] is String && item['estado'] is String) {
+        if (item is Map &&
+            item['puzzle'] is String &&
+            item['estado'] is String) {
           puzzles[item['puzzle'] as String] = item['estado'] as String;
         }
       }

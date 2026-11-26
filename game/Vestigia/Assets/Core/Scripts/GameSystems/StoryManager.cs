@@ -94,6 +94,10 @@ public class StoryManager : MonoBehaviour
             "/3"
         );
 
+        // Avisa a la libreta: cada pedazo aparece pegado conforme se halla.
+        if (VestigiaCliente.Instance != null)
+            VestigiaCliente.Instance.Descubrir("pieza_" + planta);
+
         if (cantidadActual == 3)
         {
             Debug.Log("Historia: fotografía completa.");

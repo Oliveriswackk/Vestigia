@@ -1,14 +1,18 @@
+import 'package:radio_coordenadas/app/puzzle_session.dart';
+import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:radio_coordenadas/app/vestigia_app.dart';
+import 'support/practice_app.dart';
+import 'package:radio_coordenadas/app/vestigia_theme.dart';
 import 'package:radio_coordenadas/core/haptics.dart';
 import 'package:radio_coordenadas/menu/puzzle_entry.dart';
 import 'package:radio_coordenadas/puzzles/radio/radio_config.dart';
 import 'package:radio_coordenadas/puzzles/radio/radio_puzzle_screen.dart';
 
 import 'support/fakes.dart';
+import 'support/room_fakes.dart';
 
 const signals = [0.2, 0.8, 0.35];
 const config = RadioPuzzleConfig();
@@ -24,7 +28,7 @@ class Puzzle {
   Future<void> open(WidgetTester tester) async {
     usePhoneScreen(tester);
     await tester.pumpWidget(
-      VestigiaApp(
+      practiceApp(
         puzzles: [
           PuzzleEntry(
             id: 'radio',
@@ -262,5 +266,83 @@ void main() {
     await rotateKnob(tester, turn(-0.1));
     final expected = config.frequencyAt(0.9).round();
     expect(find.text('$expected kHz'), findsOneWidget);
+  });
+
+  testWidgets('avisa al juego: iniciado al abrir y sintonizada al completar', (
+    tester,
+  ) async {
+    final puzzle = Puzzle();
+    final room = RoomHarness();
+    await tester.runAsync(() async {
+      await room.connection.join('TAPALPA');
+      await pumpEventQueue();
+    });
+    usePhoneScreen(tester);
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: buildVestigiaTheme(),
+        home: RadioPuzzleScreen(
+          audioFactory: () => puzzle.audio,
+          hapticsFactory: () => puzzle.haptics,
+          planner: (_) => signals,
+          room: room.connection,
+        ),
+      ),
+    );
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(room.api.reported, ['radio:iniciado']);
+
+    var dial = config.initialDial;
+    for (final signal in signals) {
+      await rotateKnob(tester, turn(signal - dial));
+      dial = signal;
+      await pumpFrames(tester, const Duration(milliseconds: 2100));
+    }
+    expect(room.api.reported, ['radio:iniciado', 'radio:sintonizada']);
+    await tester.pump(puzzleAutoCloseDelay);
+  });
+
+  testWidgets('en partida: sin reiniciar y se cierra sola al sintonizar', (
+    tester,
+  ) async {
+    final puzzle = Puzzle();
+    final room = RoomHarness();
+    await tester.runAsync(() async {
+      await room.connection.join('TAPALPA');
+      await pumpEventQueue();
+    });
+    usePhoneScreen(tester);
+    await tester.pumpWidget(
+      MaterialApp(theme: buildVestigiaTheme(), home: const Text('menu')),
+    );
+    unawaited(
+      tester
+          .state<NavigatorState>(find.byType(Navigator))
+          .push(
+            MaterialPageRoute<void>(
+              builder: (_) => RadioPuzzleScreen(
+                audioFactory: () => puzzle.audio,
+                hapticsFactory: () => puzzle.haptics,
+                planner: (_) => signals,
+                room: room.connection,
+              ),
+            ),
+          ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(find.byKey(RadioPuzzleScreen.restartKey), findsNothing);
+    var dial = config.initialDial;
+    for (final signal in signals) {
+      await rotateKnob(tester, turn(signal - dial));
+      dial = signal;
+      await pumpFrames(tester, const Duration(milliseconds: 2100));
+    }
+    expect(find.text('Repetir'), findsNothing);
+    expect(find.text('Volver al menú'), findsNothing);
+    await tester.pump(puzzleAutoCloseDelay);
+    await tester.pumpAndSettle();
+    expect(find.byType(RadioPuzzleScreen), findsNothing);
+    expect(find.text('menu'), findsOneWidget);
   });
 }

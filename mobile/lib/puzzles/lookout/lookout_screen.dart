@@ -1,11 +1,15 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
 
+import '../../app/notebook_style.dart';
+import '../../app/puzzle_session.dart';
 import '../../app/puzzle_top_bar.dart';
 import '../../app/vestigia_theme.dart';
 import '../../core/dial_feedback.dart';
 import '../../core/haptics.dart';
+import '../../core/room/room_connection.dart';
 import '../../core/widgets/tuning_knob.dart';
 import 'lookout_config.dart';
 import 'lookout_game.dart';
@@ -19,10 +23,12 @@ class LookoutScreen extends StatefulWidget {
     super.key,
     this.config = const LookoutConfig(),
     this.hapticsFactory,
+    this.room,
   });
 
   final LookoutConfig config;
   final Haptics Function()? hapticsFactory;
+  final RoomConnection? room;
 
   static const lensKey = Key('lookout-lens');
   static const xKnobKey = Key('lookout-knob-x');
@@ -51,6 +57,11 @@ class LookoutScreenState extends State<LookoutScreen>
         ..addStatusListener((status) {
           if (status == AnimationStatus.completed && mounted) {
             setState(_game.finishObservation);
+            final room = widget.room;
+            if (room != null) {
+              unawaited(room.reportPuzzle('lookout', 'completada'));
+              closePuzzleWhenSolved(this, inRoom: true);
+            }
           }
         });
 
@@ -72,6 +83,8 @@ class LookoutScreenState extends State<LookoutScreen>
     WidgetsBinding.instance.addObserver(this);
     _haptics = (widget.hapticsFactory ?? PlatformHaptics.new)();
     _resetDetents();
+    final room = widget.room;
+    if (room != null) unawaited(room.reportPuzzle('lookout', 'iniciado'));
   }
 
   @override
@@ -184,37 +197,39 @@ class LookoutScreenState extends State<LookoutScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
-        child: Column(
-          children: [
-            PuzzleTopBar(
-              title: 'Mirador del faro',
-              onBack: _backToMenu,
-              onRestart: _restart,
-              restartKey: LookoutScreen.restartKey,
-            ),
-            Expanded(
-              child: LayoutBuilder(
-                builder: (context, constraints) {
-                  _lensDiameter =
-                      min(
-                        constraints.maxWidth - 32,
-                        constraints.maxHeight * 0.5,
-                      ).clamp(120.0, 380.0) -
-                      2 * LensView.rimWidth;
-                  return Column(
-                    children: [
-                      const SizedBox(height: 4),
-                      _lens(),
-                      if (_config.showDebugValues) _debugValues(),
-                      const SizedBox(height: 8),
-                      Expanded(child: _phaseControls()),
-                    ],
-                  );
-                },
+      body: CardboardBackground(
+        child: SafeArea(
+          child: Column(
+            children: [
+              PuzzleTopBar(
+                title: 'Mirador del faro',
+                onBack: _backToMenu,
+                onRestart: widget.room == null ? _restart : null,
+                restartKey: LookoutScreen.restartKey,
               ),
-            ),
-          ],
+              Expanded(
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    _lensDiameter =
+                        min(
+                          constraints.maxWidth - 32,
+                          constraints.maxHeight * 0.5,
+                        ).clamp(120.0, 380.0) -
+                        2 * LensView.rimWidth;
+                    return Column(
+                      children: [
+                        const SizedBox(height: 4),
+                        _lens(),
+                        if (_config.showDebugValues) _debugValues(),
+                        const SizedBox(height: 8),
+                        Expanded(child: _phaseControls()),
+                      ],
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

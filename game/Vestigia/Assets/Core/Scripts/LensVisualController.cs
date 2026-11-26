@@ -76,14 +76,36 @@ public class LensVisualController : MonoBehaviour
 
         Debug.Log("Mirador: lente sucia y desenfocada.");
 
-        if (simulateForTesting)
+        // Con el teléfono conectado, el mirador se juega en la app: al
+        // resolverse allá, aquí se limpia la lente y se enfoca.
+        if (MobileBridge.Instance != null && MobileBridge.AppDisponible)
+        {
+            MobileBridge.Instance.StartPuzzle(
+                "lookout",
+                () => simulationCoroutine = StartCoroutine(FinishFromApp())
+            );
+        }
+        else if (simulateForTesting)
+        {
             simulationCoroutine = StartCoroutine(SimulatePuzzle());
+        }
     }
 
     private IEnumerator SimulatePuzzle()
     {
         yield return new WaitForSeconds(cleaningDuration);
 
+        CompleteLensCleaning();
+
+        yield return new WaitForSeconds(focusingDuration);
+
+        CompleteObservatoryFound();
+
+        simulationCoroutine = null;
+    }
+
+    private IEnumerator FinishFromApp()
+    {
         CompleteLensCleaning();
 
         yield return new WaitForSeconds(focusingDuration);

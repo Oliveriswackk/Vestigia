@@ -30,6 +30,16 @@ abstract interface class RoomApi {
 
   /// `GET /salas/{codigo}/estado`.
   Future<RoomSnapshot> state(String code, String token);
+
+  /// `PUT /salas/{codigo}/puzzles/{puzzle}` con `{"datos": {key: true}}`.
+  /// Solo la app puede avisar los puzzles; el servidor decide si el aviso
+  /// mueve el puzzle hacia adelante.
+  Future<void> reportPuzzle(
+    String code,
+    String token,
+    String puzzle,
+    String key,
+  );
 }
 
 class HttpRoomApi implements RoomApi {
@@ -45,7 +55,10 @@ class HttpRoomApi implements RoomApi {
 
   @override
   Future<String> join(String code) async {
-    final body = await _send('POST', '/api/v1/salas/${Uri.encodeComponent(code)}/unirse');
+    final body = await _send(
+      'POST',
+      '/api/v1/salas/${Uri.encodeComponent(code)}/unirse',
+    );
     final token = body['token'];
     if (token is! String || token.isEmpty) {
       throw const RoomApiException(200, 'La respuesta no trae token.');
@@ -63,10 +76,30 @@ class HttpRoomApi implements RoomApi {
     return RoomSnapshot.fromJson(body);
   }
 
+  @override
+  Future<void> reportPuzzle(
+    String code,
+    String token,
+    String puzzle,
+    String key,
+  ) async {
+    await _send(
+      'PUT',
+      '/api/v1/salas/${Uri.encodeComponent(code)}/puzzles/${Uri.encodeComponent(puzzle)}',
+      token: token,
+      body: {
+        'datos': {key: true},
+      },
+      requireBody: false,
+    );
+  }
+
   Future<Map<String, dynamic>> _send(
     String method,
     String path, {
     String? token,
+    Object? body,
+    bool requireBody = true,
   }) async {
     final int status;
     final String text;
@@ -77,6 +110,10 @@ class HttpRoomApi implements RoomApi {
       request.headers.set(HttpHeaders.acceptHeader, 'application/json');
       if (token != null) {
         request.headers.set(HttpHeaders.authorizationHeader, 'Bearer $token');
+      }
+      if (body != null) {
+        request.headers.contentType = ContentType.json;
+        request.add(utf8.encode(jsonEncode(body)));
       }
       final response = await request.close().timeout(_timeout);
       status = response.statusCode;
@@ -109,6 +146,7 @@ class HttpRoomApi implements RoomApi {
       );
     }
     if (json == null) {
+      if (!requireBody) return const {};
       throw RoomApiException(status, 'Respuesta inesperada del servidor.');
     }
     return json;

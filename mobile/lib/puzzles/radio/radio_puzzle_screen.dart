@@ -1,12 +1,16 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 
+import '../../app/notebook_style.dart';
+import '../../app/puzzle_session.dart';
 import '../../app/puzzle_top_bar.dart';
 import '../../app/vestigia_theme.dart';
 import '../../core/dial_feedback.dart';
 import '../../core/haptics.dart';
+import '../../core/room/room_connection.dart';
 import '../../core/widgets/tuning_knob.dart';
 import 'radio_audio.dart';
 import 'radio_config.dart';
@@ -23,7 +27,12 @@ class RadioPuzzleScreen extends StatefulWidget {
     this.hapticsFactory,
     this.planner,
     this.random,
+    this.room,
   });
+
+  /// Sala del juego, si la hay: la radio avisa cuándo se abre y cuándo
+  /// queda sintonizada, para que el juego avance.
+  final RoomConnection? room;
 
   final RadioPuzzleConfig config;
   final RadioAudio Function()? audioFactory;
@@ -77,6 +86,8 @@ class _RadioPuzzleScreenState extends State<RadioPuzzleScreen>
     _ticker = createTicker(_onTick)..start();
     WidgetsBinding.instance.addObserver(this);
     _audio.start(_game.signalStrength);
+    final room = widget.room;
+    if (room != null) unawaited(room.reportPuzzle('radio', 'iniciado'));
   }
 
   @override
@@ -127,6 +138,11 @@ class _RadioPuzzleScreenState extends State<RadioPuzzleScreen>
       _haptics.play(
         capture.completesPuzzle ? HapticCue.complete : HapticCue.capture,
       );
+      final room = widget.room;
+      if (capture.completesPuzzle && room != null) {
+        unawaited(room.reportPuzzle('radio', 'sintonizada'));
+        closePuzzleWhenSolved(this, inRoom: true);
+      }
     }
     _syncFeedback();
     setState(() {});
@@ -178,44 +194,50 @@ class _RadioPuzzleScreenState extends State<RadioPuzzleScreen>
         if (didPop) _shutdown();
       },
       child: Scaffold(
-        body: SafeArea(
-          child: Column(
-            children: [
-              PuzzleTopBar(
-                title: 'Radio',
-                onBack: _backToMenu,
-                onRestart: _restart,
-                restartKey: RadioPuzzleScreen.restartKey,
-              ),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      _RadioFace(config: _config, game: _game, time: _time),
-                      const SizedBox(height: 14),
-                      _StatusLine(game: _game, paused: !_foreground),
-                      const SizedBox(height: 14),
-                      _DigitSlots(game: _game),
-                      const SizedBox(height: 12),
-                      Expanded(
-                        child: AnimatedSwitcher(
-                          duration: const Duration(milliseconds: 300),
-                          child: _game.isComplete
-                              ? _CompletionPanel(
-                                  digits: _game.capturedDigits,
-                                  onRepeat: _restart,
-                                  onMenu: _backToMenu,
-                                )
-                              : _knob(),
+        body: CardboardBackground(
+          child: SafeArea(
+            child: Column(
+              children: [
+                PuzzleTopBar(
+                  title: 'Radio',
+                  onBack: _backToMenu,
+                  onRestart: widget.room == null ? _restart : null,
+                  restartKey: RadioPuzzleScreen.restartKey,
+                ),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        _RadioFace(config: _config, game: _game, time: _time),
+                        const SizedBox(height: 14),
+                        _StatusLine(game: _game, paused: !_foreground),
+                        const SizedBox(height: 14),
+                        _DigitSlots(game: _game),
+                        const SizedBox(height: 12),
+                        Expanded(
+                          child: AnimatedSwitcher(
+                            duration: const Duration(milliseconds: 300),
+                            child: _game.isComplete
+                                ? _CompletionPanel(
+                                    digits: _game.capturedDigits,
+                                    onRepeat: widget.room == null
+                                        ? _restart
+                                        : null,
+                                    onMenu: widget.room == null
+                                        ? _backToMenu
+                                        : null,
+                                  )
+                                : _knob(),
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -422,8 +444,8 @@ class _CompletionPanel extends StatelessWidget {
   });
 
   final List<int> digits;
-  final VoidCallback onRepeat;
-  final VoidCallback onMenu;
+  final VoidCallback? onRepeat;
+  final VoidCallback? onMenu;
 
   @override
   Widget build(BuildContext context) {
@@ -451,18 +473,20 @@ class _CompletionPanel extends StatelessWidget {
                 color: VestigiaColors.glow,
               ),
             ),
-            const SizedBox(height: 20),
-            FilledButton.icon(
-              onPressed: onRepeat,
-              icon: const Icon(Icons.replay),
-              label: const Text('Repetir'),
-            ),
-            const SizedBox(height: 12),
-            OutlinedButton.icon(
-              onPressed: onMenu,
-              icon: const Icon(Icons.grid_view),
-              label: const Text('Volver al menú'),
-            ),
+            if (onRepeat != null && onMenu != null) ...[
+              const SizedBox(height: 20),
+              FilledButton.icon(
+                onPressed: onRepeat,
+                icon: const Icon(Icons.replay),
+                label: const Text('Repetir'),
+              ),
+              const SizedBox(height: 12),
+              OutlinedButton.icon(
+                onPressed: onMenu,
+                icon: const Icon(Icons.grid_view),
+                label: const Text('Volver al menú'),
+              ),
+            ],
           ],
         ),
       ),

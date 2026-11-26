@@ -2,21 +2,27 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:radio_coordenadas/app/vestigia_app.dart';
+import 'support/practice_app.dart';
+import 'package:radio_coordenadas/app/vestigia_theme.dart';
 import 'package:radio_coordenadas/core/haptics.dart';
 import 'package:radio_coordenadas/menu/puzzle_entry.dart';
+import 'package:radio_coordenadas/app/puzzle_session.dart';
 import 'package:radio_coordenadas/puzzles/photo/photo_config.dart';
 import 'package:radio_coordenadas/puzzles/photo/photo_puzzle_screen.dart';
 import 'package:radio_coordenadas/puzzles/photo/widgets/photo_back_view.dart';
 import 'package:radio_coordenadas/puzzles/photo/widgets/photo_piece_view.dart';
 
 import 'support/fakes.dart';
+import 'support/room_fakes.dart';
 
 class PhotoHarness {
+  PhotoHarness({this.room});
+
+  final RoomHarness? room;
   final haptics = FakeHaptics();
   var seed = 3;
 
-  Widget app() => VestigiaApp(
+  Widget app() => practiceApp(
     puzzles: [
       PuzzleEntry(
         id: 'photo',
@@ -26,6 +32,7 @@ class PhotoHarness {
         builder: (_) => PhotoPuzzleScreen(
           hapticsFactory: () => haptics,
           random: Random(seed++),
+          room: room?.connection,
         ),
       ),
     ],
@@ -33,6 +40,15 @@ class PhotoHarness {
 
   int get solvedCues =>
       haptics.cues.where((c) => c == HapticCue.photoSolved).length;
+}
+
+Future<RoomHarness> joinedRoom(WidgetTester tester) async {
+  final room = RoomHarness();
+  await tester.runAsync(() async {
+    await room.connection.join('TAPALPA');
+    await pumpEventQueue();
+  });
+  return room;
 }
 
 Future<void> openPhoto(WidgetTester tester) async {
@@ -62,7 +78,11 @@ Future<void> dragPiece(WidgetTester tester, int id, Offset target) async {
         piece.bounds.top + piece.bounds.height * gy / 20,
       );
       final point = assembly.originOf(id) + local;
-      if (piece.contains(local) && assembly.pieceAt(point) == id) grab = point;
+      if (piece.contains(local) &&
+          assembly.pieceAt(point) == id &&
+          state.clutterAt(point) == null) {
+        grab = point;
+      }
     }
   }
   expect(grab, isNotNull, reason: 'la pieza $id está tapada');
@@ -110,7 +130,7 @@ void main() {
     tester,
   ) async {
     usePhoneScreen(tester);
-    await tester.pumpWidget(const VestigiaApp());
+    await tester.pumpWidget(practiceApp());
     expect(find.text('Fotografía'), findsOneWidget);
     expect(find.byIcon(Icons.photo), findsOneWidget);
 
@@ -241,5 +261,102 @@ void main() {
     expect(await tester.binding.handlePopRoute(), isTrue);
     await tester.pumpAndSettle();
     expect(find.text('VESTIGIA'), findsOneWidget);
+  });
+
+  testWidgets('avisa al juego: iniciado al abrir y completada una vez', (
+    tester,
+  ) async {
+    usePhoneScreen(tester);
+    final room = await joinedRoom(tester);
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: buildVestigiaTheme(),
+        home: PhotoPuzzleScreen(
+          hapticsFactory: FakeHaptics.new,
+          random: Random(3),
+          room: room.connection,
+        ),
+      ),
+    );
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(room.api.reported, ['photo:iniciado']);
+
+    await solve(tester);
+    await pumpFlip(tester);
+    expect(room.api.reported, ['photo:iniciado', 'photo:completada']);
+    await tester.pump(puzzleAutoCloseDelay);
+  });
+
+  testWidgets('hay estorbos que se arrastran y no resuelven el puzzle', (
+    tester,
+  ) async {
+    usePhoneScreen(tester);
+    await tester.pumpWidget(PhotoHarness().app());
+    await openPhoto(tester);
+
+    final state = screenState(tester);
+    final assembly = state.assembly!;
+    final items = state.clutter;
+    expect(items.length, greaterThanOrEqualTo(8));
+    // Los pedazos siguen alcanzables por su punto interior.
+    for (final p in assembly.photo.pieces) {
+      final point = assembly.originOf(p.id) + p.interiorPoint;
+      expect(state.clutterAt(point), isNull);
+      expect(assembly.pieceAt(point), p.id);
+    }
+
+    final item = items.first;
+    final scale = state.layout!.scale;
+    final topLeft = tester.getTopLeft(find.byKey(PhotoPuzzleScreen.surfaceKey));
+    final before = item.center;
+    final gesture = await tester.startGesture(topLeft + before * scale);
+    await gesture.moveBy(const Offset(20, 10));
+    await gesture.moveBy(const Offset(20, 10));
+    await gesture.up();
+    await tester.pump();
+
+    expect(item.center, isNot(before));
+    expect(assembly.groupCount, 3);
+    expect(assembly.isSolved, isFalse);
+  });
+
+  testWidgets('en partida no hay reiniciar y al resolver se cierra sola', (
+    tester,
+  ) async {
+    usePhoneScreen(tester);
+    final room = await joinedRoom(tester);
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: buildVestigiaTheme(),
+        home: Builder(
+          builder: (context) => Scaffold(
+            body: TextButton(
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => PhotoPuzzleScreen(
+                    hapticsFactory: FakeHaptics.new,
+                    random: Random(3),
+                    room: room.connection,
+                  ),
+                ),
+              ),
+              child: const Text('abrir'),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('abrir'));
+    await tester.pumpAndSettle();
+    expect(find.byType(PhotoPuzzleScreen), findsOneWidget);
+    expect(find.byKey(PhotoPuzzleScreen.restartKey), findsNothing);
+
+    await solve(tester);
+    await pumpFlip(tester);
+    expect(find.byType(PhotoPuzzleScreen), findsOneWidget);
+    await tester.pump(puzzleAutoCloseDelay);
+    await tester.pumpAndSettle();
+    expect(find.byType(PhotoPuzzleScreen), findsNothing);
+    expect(find.text('abrir'), findsOneWidget);
   });
 }

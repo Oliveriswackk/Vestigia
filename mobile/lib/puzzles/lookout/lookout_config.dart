@@ -33,7 +33,7 @@ class LookoutConfig {
     this.panoramaAspect = 0.6,
     this.viewWidthFraction = 0.28,
     this.knobTurnsForFullRange = 1.5,
-    this.showDebugValues = true,
+    this.showDebugValues = false,
   }) : assert(cleanThreshold > 0 && cleanThreshold <= 1),
        assert(brushRadius > 0),
        assert(alignTolerance > 0);

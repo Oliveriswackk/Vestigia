@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:radio_coordenadas/app/vestigia_app.dart';
+import 'package:radio_coordenadas/app/vestigia_theme.dart';
+import 'package:radio_coordenadas/menu/main_menu_screen.dart';
+import 'package:radio_coordenadas/notebook/cover_screen.dart';
 import 'package:radio_coordenadas/core/haptics.dart';
 import 'package:radio_coordenadas/menu/puzzle_entry.dart';
 import 'package:radio_coordenadas/puzzles/radio/radio_audio.dart';
@@ -15,25 +18,35 @@ class RadioHarness {
   final audios = <FakeRadioAudio>[];
   final haptics = FakeHaptics();
 
-  Widget app() => VestigiaApp(
-    puzzles: [
-      PuzzleEntry(
-        id: 'radio',
-        title: 'Radio',
-        description: 'Prueba',
-        icon: Icons.radio,
-        builder: (_) => RadioPuzzleScreen(
-          audioFactory: () {
-            final audio = FakeRadioAudio();
-            audios.add(audio);
-            return audio;
-          },
-          hapticsFactory: () => haptics,
-          planner: (_) => const [0.2, 0.8, 0.35],
+  /// Menú de práctica (el que se abre desde la tapa sin partida).
+  Widget app() => MaterialApp(
+    theme: buildVestigiaTheme(),
+    home: MainMenuScreen(
+      puzzles: [
+        PuzzleEntry(
+          id: 'radio',
+          title: 'Radio',
+          description: 'Prueba',
+          icon: Icons.radio,
+          builder: (_) => RadioPuzzleScreen(
+            audioFactory: () {
+              final audio = FakeRadioAudio();
+              audios.add(audio);
+              return audio;
+            },
+            hapticsFactory: () => haptics,
+            planner: (_) => const [0.2, 0.8, 0.35],
+          ),
         ),
-      ),
-    ],
+      ],
+    ),
   );
+}
+
+/// Mantener presionado el título de la tapa abre el modo práctica.
+Future<void> openPractice(WidgetTester tester) async {
+  await tester.longPress(find.byKey(CoverScreen.titleKey));
+  await tester.pumpAndSettle();
 }
 
 Future<void> openRadio(WidgetTester tester) async {
@@ -44,17 +57,24 @@ Future<void> openRadio(WidgetTester tester) async {
 }
 
 void main() {
-  testWidgets('el menú muestra Vestigia y el puzzle de radio', (tester) async {
-    usePhoneScreen(tester);
-    await tester.pumpWidget(const VestigiaApp());
+  testWidgets(
+    'la app abre en la tapa y el menú de práctica muestra los puzzles',
+    (tester) async {
+      usePhoneScreen(tester);
+      await tester.pumpWidget(const VestigiaApp());
 
-    expect(find.text('VESTIGIA'), findsOneWidget);
-    expect(find.text('Radio'), findsOneWidget);
-    expect(find.byIcon(Icons.radio), findsOneWidget);
-    expect(find.byIcon(Icons.add), findsNothing);
-    await tester.scrollUntilVisible(find.text('Observatorio'), 100);
-    expect(find.text('Observatorio'), findsOneWidget);
-  });
+      expect(find.byKey(CoverScreen.codeFieldKey), findsOneWidget);
+      expect(find.text('Radio'), findsNothing);
+
+      await openPractice(tester);
+      expect(find.text('VESTIGIA'), findsOneWidget);
+      expect(find.text('Radio'), findsOneWidget);
+      expect(find.byIcon(Icons.radio), findsOneWidget);
+      expect(find.byIcon(Icons.add), findsNothing);
+      await tester.scrollUntilVisible(find.text('Observatorio'), 100);
+      expect(find.text('Observatorio'), findsOneWidget);
+    },
+  );
 
   testWidgets('abre el puzzle desde el menú y empieza el ruido', (
     tester,
@@ -166,6 +186,7 @@ void main() {
     });
 
     await tester.pumpWidget(const VestigiaApp());
+    await openPractice(tester);
     await openRadio(tester);
     expect(audioCalls.first, 'start');
 

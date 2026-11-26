@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:radio_coordenadas/app/vestigia_app.dart';
+import 'support/practice_app.dart';
 import 'package:radio_coordenadas/core/room/room_api.dart';
 import 'package:radio_coordenadas/room/room_screen.dart';
 
@@ -11,7 +11,7 @@ Future<RoomHarness> openRoom(WidgetTester tester) async {
   usePhoneScreen(tester);
   final harness = RoomHarness();
   addTearDown(harness.connection.dispose);
-  await tester.pumpWidget(VestigiaApp(room: harness.connection));
+  await tester.pumpWidget(practiceApp(room: harness.connection));
   await tester.tap(find.text('Sala'));
   await tester.pumpAndSettle();
   expect(find.byKey(RoomScreen.codeFieldKey), findsOneWidget);
@@ -56,7 +56,10 @@ void main() {
     expect(find.text('pueblo'), findsOneWidget);
     expect(find.text('radio'), findsOneWidget);
     expect(find.byKey(RoomScreen.logKey), findsOneWidget);
-    expect(find.textContaining('Autenticada como app en TAPALPA'), findsOneWidget);
+    expect(
+      find.textContaining('Autenticada como app en TAPALPA'),
+      findsOneWidget,
+    );
   });
 
   testWidgets('un código inexistente muestra el error y deja reintentar', (
