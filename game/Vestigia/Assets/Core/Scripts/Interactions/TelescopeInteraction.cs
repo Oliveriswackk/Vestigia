@@ -1,4 +1,3 @@
-
 using UnityEngine;
 using UnityEngine.InputSystem;
 using TMPro;
@@ -36,10 +35,13 @@ public class TelescopeInteraction : MonoBehaviour
     private bool inDialogue;
     private bool inProcess;
     private bool hasTalked;
+    private bool isUnlocked;
 
     private void Start()
     {
-        Debug.Log("TELESCOPE: Script iniciado.");
+        Debug.Log("TELESCOPE: Script iniciado. Telescopio bloqueado.");
+
+        isUnlocked = false;
 
         if (interactHint != null)
             interactHint.SetActive(false);
@@ -55,11 +57,18 @@ public class TelescopeInteraction : MonoBehaviour
             processPanel.SetActive(false);
         else
             Debug.LogError("TELESCOPE: Falta asignar Process Panel.");
+
+        if (playerMovement == null)
+            playerMovement = FindFirstObjectByType<PlayerMovement>();
+
+        if (cameraRotation == null)
+            cameraRotation = FindFirstObjectByType<CameraRotation>();
     }
 
     private void Update()
     {
-        if (inProcess || hasTalked)
+        // No permite interactuar mientras esté bloqueado.
+        if (!isUnlocked || inProcess || hasTalked)
             return;
 
         if (Keyboard.current == null)
@@ -82,14 +91,14 @@ public class TelescopeInteraction : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        Debug.Log("TELESCOPE: Entró en la zona: " + other.name);
-
         if (!other.CompareTag("Player"))
             return;
 
+        Debug.Log("TELESCOPE: Jugador cerca.");
+
         playerTouching = true;
 
-        if (!inDialogue && !hasTalked)
+        if (isUnlocked && !inDialogue && !hasTalked)
             SetInteractHint(true);
     }
 
@@ -102,6 +111,22 @@ public class TelescopeInteraction : MonoBehaviour
 
         playerTouching = false;
         SetInteractHint(false);
+    }
+
+    // Este método es llamado por SpectrogramInteraction.
+    public void UnlockTelescope()
+    {
+        if (isUnlocked)
+            return;
+
+        isUnlocked = true;
+
+        Debug.Log("TELESCOPE: Telescopio desbloqueado.");
+
+        // Si el jugador ya está dentro de la zona,
+        // el indicador aparece inmediatamente.
+        if (playerTouching && !hasTalked)
+            SetInteractHint(true);
     }
 
     private void SetInteractHint(bool visible)
@@ -190,7 +215,6 @@ public class TelescopeInteraction : MonoBehaviour
         if (processPanel != null)
             processPanel.SetActive(true);
 
-        // Iniciar la simulación del acertijo.
         if (MobileBridge.Instance != null)
         {
             MobileBridge.Instance.StartPuzzle(

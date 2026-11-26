@@ -1,8 +1,9 @@
-
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.UI;
 using TMPro;
 using System.Collections;
+using System.Collections.Generic;
 
 public class VeladorInteraction : MonoBehaviour
 {
@@ -34,6 +35,11 @@ public class VeladorInteraction : MonoBehaviour
     [SerializeField] private GameObject yaroCanvas;
     [SerializeField] private RectTransform yaroImage;
     [SerializeField] private float yaroDisplayDuration = 2.5f;
+
+    [Header("Aura Misteriosa (Horror Cósmico / Suspenso)")]
+    [SerializeField] private Color yaroAuraColor = new Color(0.82f, 0.68f, 0.26f, 0.28f);
+    [SerializeField] private Color yaroEerieAccentColor = new Color(0.36f, 0.22f, 0.58f, 0.22f);
+    [SerializeField, Range(6, 28)] private int yaroSparkCount = 16;
 
     [Header("Escenas")]
     [SerializeField] private string firstScene = "Escena3.1_PrimerPiso";
@@ -76,6 +82,17 @@ public class VeladorInteraction : MonoBehaviour
 
     private Coroutine yaroCoroutine;
     private string[] activeLines;
+
+    // Elementos generados por código para el aura misteriosa
+    private RectTransform auraRoot;
+    private RectTransform haloUmbral;
+    private CanvasGroup auraGroup;
+    private Sprite softRadialSprite;
+    private readonly List<RectTransform> sparks = new List<RectTransform>();
+    private readonly List<Image> sparkImages = new List<Image>();
+    private readonly List<Vector2> sparkBasePos = new List<Vector2>();
+    private readonly List<float> sparkPhases = new List<float>();
+    private readonly List<float> sparkSpeeds = new List<float>();
 
     private void Start()
     {
@@ -271,10 +288,135 @@ public class VeladorInteraction : MonoBehaviour
         yaroCoroutine = StartCoroutine(YaroPopAnimation());
     }
 
+    private void EnsureYaroMysteryEffect()
+    {
+        if (auraRoot != null || yaroCanvas == null || yaroImage == null)
+            return;
+
+        if (softRadialSprite == null)
+            softRadialSprite = CreateSoftRadialSprite(128);
+
+        GameObject rootObj = new GameObject(
+            "YaroCosmicAura",
+            typeof(RectTransform),
+            typeof(CanvasGroup)
+        );
+
+        auraRoot = rootObj.GetComponent<RectTransform>();
+        auraRoot.SetParent(yaroImage.parent, false);
+        auraRoot.anchorMin = yaroImage.anchorMin;
+        auraRoot.anchorMax = yaroImage.anchorMax;
+        auraRoot.pivot = yaroImage.pivot;
+        auraRoot.anchoredPosition = yaroImage.anchoredPosition;
+        auraRoot.sizeDelta = yaroImage.sizeDelta;
+
+        // Colocar detrás de yaroImage para no obstruir la figura.
+        int yaroIndex = yaroImage.GetSiblingIndex();
+        auraRoot.SetSiblingIndex(Mathf.Max(0, yaroIndex));
+        yaroImage.SetSiblingIndex(yaroIndex + 1);
+
+        auraGroup = rootObj.GetComponent<CanvasGroup>();
+        auraGroup.alpha = 0f;
+        auraGroup.interactable = false;
+        auraGroup.blocksRaycasts = false;
+
+        float baseSize = Mathf.Max(yaroImage.rect.width, yaroImage.rect.height);
+        if (baseSize <= 1f)
+            baseSize = Mathf.Max(yaroImage.sizeDelta.x, yaroImage.sizeDelta.y);
+        if (baseSize <= 1f)
+            baseSize = 220f;
+
+        // Resplandor ámbar apagado detrás del objeto (como luz de faro en niebla)
+        GameObject glowObj = new GameObject("EerieGlow", typeof(RectTransform), typeof(Image));
+        RectTransform glowRect = glowObj.GetComponent<RectTransform>();
+        glowRect.SetParent(auraRoot, false);
+        glowRect.anchoredPosition = Vector2.zero;
+        glowRect.sizeDelta = Vector2.one * (baseSize * 2.15f);
+
+        Image glowImg = glowObj.GetComponent<Image>();
+        glowImg.sprite = softRadialSprite;
+        glowImg.color = new Color(yaroAuraColor.r, yaroAuraColor.g, yaroAuraColor.b, 0.24f);
+        glowImg.raycastTarget = false;
+
+        // Halo cósmico frío/violáceo elíptico alrededor
+        GameObject haloObj = new GameObject("CosmicHalo", typeof(RectTransform), typeof(Image));
+        haloUmbral = haloObj.GetComponent<RectTransform>();
+        haloUmbral.SetParent(auraRoot, false);
+        haloUmbral.anchoredPosition = Vector2.zero;
+        haloUmbral.sizeDelta = new Vector2(baseSize * 1.75f, baseSize * 1.35f);
+
+        Image haloImg = haloObj.GetComponent<Image>();
+        haloImg.sprite = softRadialSprite;
+        haloImg.color = new Color(yaroEerieAccentColor.r, yaroEerieAccentColor.g, yaroEerieAccentColor.b, 0.22f);
+        haloImg.raycastTarget = false;
+
+        // Motas/chispas erráticas alrededor del objeto
+        for (int i = 0; i < yaroSparkCount; i++)
+        {
+            GameObject spObj = new GameObject("EerieMote_" + i, typeof(RectTransform), typeof(Image));
+            RectTransform spRect = spObj.GetComponent<RectTransform>();
+            spRect.SetParent(auraRoot, false);
+
+            float angle = (Mathf.PI * 2f * i) / Mathf.Max(1, yaroSparkCount) + Random.Range(-0.22f, 0.22f);
+            float radius = baseSize * Random.Range(0.48f, 0.92f);
+            Vector2 pos = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * radius;
+
+            spRect.anchoredPosition = pos;
+            float moteSize = Random.Range(3.5f, 8f);
+            spRect.sizeDelta = Vector2.one * moteSize;
+
+            Image spImg = spObj.GetComponent<Image>();
+            spImg.sprite = softRadialSprite;
+
+            bool violetMote = (i % 4 == 0);
+            spImg.color = violetMote
+                ? new Color(0.62f, 0.42f, 0.92f, Random.Range(0.25f, 0.60f))
+                : new Color(0.95f, 0.84f, 0.45f, Random.Range(0.25f, 0.65f));
+            spImg.raycastTarget = false;
+
+            sparks.Add(spRect);
+            sparkImages.Add(spImg);
+            sparkBasePos.Add(pos);
+            sparkPhases.Add(Random.Range(0f, Mathf.PI * 2f));
+            sparkSpeeds.Add(Random.Range(0.9f, 2.2f));
+        }
+    }
+
+    private Sprite CreateSoftRadialSprite(int resolution)
+    {
+        Texture2D tex = new Texture2D(resolution, resolution, TextureFormat.RGBA32, false);
+        Color32[] pixels = new Color32[resolution * resolution];
+
+        for (int y = 0; y < resolution; y++)
+        {
+            for (int x = 0; x < resolution; x++)
+            {
+                float dx = ((x + 0.5f) / resolution) * 2f - 1f;
+                float dy = ((y + 0.5f) / resolution) * 2f - 1f;
+                float dist = Mathf.Clamp01(Mathf.Sqrt(dx * dx + dy * dy));
+                float alpha = Mathf.Pow(1f - dist, 2.5f);
+
+                pixels[y * resolution + x] = new Color(1f, 1f, 1f, alpha);
+            }
+        }
+
+        tex.SetPixels32(pixels);
+        tex.wrapMode = TextureWrapMode.Clamp;
+        tex.filterMode = FilterMode.Bilinear;
+        tex.Apply();
+
+        return Sprite.Create(tex, new Rect(0, 0, resolution, resolution), new Vector2(0.5f, 0.5f), 100f);
+    }
+
     private IEnumerator YaroPopAnimation()
     {
         yaroCanvas.SetActive(true);
         yaroImage.localScale = Vector3.zero;
+        yaroImage.localRotation = Quaternion.identity;
+
+        EnsureYaroMysteryEffect();
+        if (auraGroup != null)
+            auraGroup.alpha = 0f;
 
         // Crecer.
         float elapsed = 0f;
@@ -311,8 +453,54 @@ public class VeladorInteraction : MonoBehaviour
 
         yaroImage.localScale = Vector3.one;
 
-        // Mantener visible.
-        yield return new WaitForSeconds(yaroDisplayDuration);
+        // Mantener visible con aura y motas inquietantes alrededor.
+        float holdElapsed = 0f;
+        float fxTime = 0f;
+
+        while (holdElapsed < yaroDisplayDuration)
+        {
+            float dt = Time.deltaTime;
+            holdElapsed += dt;
+            fxTime += dt;
+
+            // Leve temblor/deriva en el objeto para reforzar lo desconocido
+            float tilt = Mathf.Sin(fxTime * 2.4f) * 1.8f;
+            yaroImage.localRotation = Quaternion.Euler(0f, 0f, tilt);
+
+            if (auraRoot != null && auraGroup != null)
+            {
+                auraGroup.alpha = Mathf.Clamp01(holdElapsed / 0.25f);
+
+                float flicker = 0.94f + 0.06f * Mathf.Sin(fxTime * 2.7f) + 0.02f * Mathf.Cos(fxTime * 7.3f);
+                auraRoot.localScale = Vector3.one * flicker;
+
+                if (haloUmbral != null)
+                    haloUmbral.localRotation = Quaternion.Euler(0f, 0f, Mathf.Sin(fxTime * 0.8f) * 14f);
+
+                for (int i = 0; i < sparks.Count; i++)
+                {
+                    float phase = sparkPhases[i];
+                    float speed = sparkSpeeds[i];
+
+                    Vector2 drift = new Vector2(
+                        Mathf.Cos(fxTime * speed + phase) * 9f,
+                        Mathf.Sin(fxTime * (speed * 1.25f) + phase) * 11f + (fxTime * 4f) % 10f - 5f
+                    );
+
+                    sparks[i].anchoredPosition = sparkBasePos[i] + drift;
+
+                    if (i < sparkImages.Count && sparkImages[i] != null)
+                    {
+                        Color c = sparkImages[i].color;
+                        float baseAlpha = 0.35f + 0.35f * Mathf.Sin(fxTime * (speed * 2.2f) + phase);
+                        c.a = Mathf.Clamp01(baseAlpha);
+                        sparkImages[i].color = c;
+                    }
+                }
+            }
+
+            yield return null;
+        }
 
         // Desaparecer.
         elapsed = 0f;
@@ -327,10 +515,16 @@ public class VeladorInteraction : MonoBehaviour
             yaroImage.localScale =
                 Vector3.Lerp(Vector3.one, Vector3.zero, t);
 
+            if (auraGroup != null)
+                auraGroup.alpha = Mathf.Lerp(1f, 0f, t);
+
             yield return null;
         }
 
         yaroImage.localScale = Vector3.zero;
+        yaroImage.localRotation = Quaternion.identity;
+        if (auraGroup != null)
+            auraGroup.alpha = 0f;
         yaroCanvas.SetActive(false);
 
         yaroCoroutine = null;

@@ -14,11 +14,23 @@ public class MenuInicial : MonoBehaviour
     [SerializeField] private string escenaReanudar = "Escena3.1_PrimerPiso";
 
     [Header("Ambiente")]
-    [SerializeField, Range(30, 300)] private int cantidadLluvia = 180;
+    [SerializeField, Range(30, 400)] private int cantidadLluvia = 260;
     [SerializeField, Range(0.05f, 1.5f)] private float velocidadHaz = 0.3f;
     [Tooltip("Opcional. Si se deja vacío se genera un viento/estática por código.")]
     [SerializeField] private AudioSource audioAmbiente;
     [SerializeField, Range(0f, 1f)] private float volumenAmbiente = 0.35f;
+
+    [Header("Música de fondo")]
+    [Tooltip("Arrastra aquí tu canción (mp3 / wav / ogg). Si está vacío no aparece el botón de música.")]
+    [SerializeField] private AudioClip cancionFondo;
+    [SerializeField, Range(0f, 1f)] private float volumenCancion = 0.5f;
+    [SerializeField] private bool cancionActivaAlInicio = true;
+    [Tooltip("Segundos que tarda en subir/bajar el volumen.")]
+    [SerializeField, Min(0.1f)] private float fundidoCancion = 2f;
+
+    [Header("Portada")]
+    [SerializeField, Range(1.5f, 4f)] private float escalaFaro = 2.8f;
+    [SerializeField, Range(100, 500)] private int tamanoTitulo = 340;
 
     [Header("Fuentes (opcional)")]
     [Tooltip("Por ejemplo una fuente cursiva tipo Great Vibes.")]
@@ -40,6 +52,8 @@ public class MenuInicial : MonoBehaviour
     private RectTransform titan;
     private RectTransform haz1;
     private RectTransform haz2;
+    private Image imgHaz1;
+    private Image imgHaz2;
     private CanvasGroup grupoAnomalia;
     private Image luzLinterna;
     private Image ventanaGlow;
@@ -51,8 +65,11 @@ public class MenuInicial : MonoBehaviour
     private BotonUI infoIniciar;
     private BotonUI infoReanudar;
     private BotonUI infoRadio;
+    private BotonUI infoMusica;
     private Text textoRadio;
+    private Text textoMusica;
     private Image lamparaRadio;
+    private Image lamparaMusica;
 
     // Sprites / texturas procedurales
     private Sprite spRadial;
@@ -66,14 +83,17 @@ public class MenuInicial : MonoBehaviour
     // Estado
     private Font fuente;
     private bool sonidoActivo;
+    private bool musicaActiva;
     private bool cargandoEscena;
     private float tiempo;
     private float anguloHaz = -Mathf.PI / 3f;
     private float alphaAnomalia;
     private float temporizadorGrano;
     private float volumenObjetivo;
+    private float volumenMusicaObjetivo;
 
     // Audio
+    private AudioSource musica;
     private AudioSource sfx;
     private AudioClip clipHover;
     private AudioClip clipClick;
@@ -120,6 +140,8 @@ public class MenuInicial : MonoBehaviour
 
     private void Awake()
     {
+        musicaActiva = cancionFondo != null && cancionActivaAlInicio;
+
         ConfigurarCanvas();
         CrearEventSystem();
         ConstruirMenu();
@@ -234,6 +256,7 @@ public class MenuInicial : MonoBehaviour
         CrearCielo();
         CrearAnomalia();
         CrearMar();
+        CrearTitulo();      // detrás del faro, como en la portada
         CrearFaro();
         CrearLluvia();
         CrearGrano();
@@ -293,7 +316,7 @@ public class MenuInicial : MonoBehaviour
 
     private void CrearFondo()
     {
-        CrearImagen(raiz, "FondoNoche", new Color(0.008f, 0.016f, 0.035f),
+        CrearImagen(raiz, "FondoNoche", new Color(0.03f, 0.05f, 0.09f),
             Vector2.zero, Vector2.one);
     }
 
@@ -303,9 +326,9 @@ public class MenuInicial : MonoBehaviour
             new Vector2(0f, 0.35f), Vector2.one);
 
         cielo.sprite = CrearGradienteVertical(
-            new Color(0.008f, 0.020f, 0.047f),
-            new Color(0.027f, 0.059f, 0.118f),
-            new Color(0.043f, 0.086f, 0.165f));
+            new Color(0.07f, 0.11f, 0.19f),
+            new Color(0.15f, 0.25f, 0.38f),
+            new Color(0.21f, 0.35f, 0.50f));
     }
 
     private void CrearAnomalia()
@@ -380,17 +403,9 @@ public class MenuInicial : MonoBehaviour
 
     private void AnimarAnomalia(float dt)
     {
-        // El haz revela la anomalía cuando apunta hacia arriba.
-        float norm = Mathf.Atan2(Mathf.Sin(anguloHaz), Mathf.Cos(anguloHaz));
-        bool apuntaArriba = norm < -Mathf.PI * 0.15f && norm > -Mathf.PI * 0.85f;
-
-        float objetivo = 0f;
-
-        if (apuntaArriba)
-        {
-            float u = (-norm - Mathf.PI * 0.15f) / (Mathf.PI * 0.7f);
-            objetivo = Mathf.Sin(u * Mathf.PI) * 0.7f;
-        }
+        // El haz revela la anomalía al barrer hacia los lados / parte superior.
+        float intensidadHaz = Mathf.Clamp01((Mathf.Abs(Mathf.Sin(anguloHaz)) - 0.35f) / 0.65f);
+        float objetivo = intensidadHaz * 0.7f;
 
         alphaAnomalia = Mathf.Lerp(alphaAnomalia, objetivo, 1f - Mathf.Exp(-3f * dt));
 
@@ -455,25 +470,27 @@ public class MenuInicial : MonoBehaviour
             Vector2.zero, new Vector2(1f, 0.38f));
 
         mar.sprite = CrearGradienteVertical(
-            new Color(0.024f, 0.055f, 0.102f),
-            new Color(0.012f, 0.027f, 0.059f),
-            new Color(0.004f, 0.012f, 0.027f));
+            new Color(0.15f, 0.26f, 0.40f),
+            new Color(0.08f, 0.16f, 0.28f),
+            new Color(0.03f, 0.07f, 0.15f));
 
         CrearImagen(raiz, "LineaHorizonte",
-            new Color(0.42f, 0.56f, 0.68f, 0.12f),
+            new Color(0.55f, 0.68f, 0.80f, 0.18f),
             new Vector2(0f, 0.378f), new Vector2(1f, 0.381f));
 
+        // Reflejo dorado del faro
         reflejo = CrearImagenAnclada(raiz, "ReflejoFaro",
             new Color(1f, 0.82f, 0.35f, 0.14f),
-            new Vector2(0.5f, 0.27f), new Vector2(90f, 330f));
+            new Vector2(0.5f, 0.15f), new Vector2(150f, 420f));
         reflejo.sprite = spRadial;
 
-        for (int i = 0; i < 46; i++)
+        // Olas
+        for (int i = 0; i < 70; i++)
         {
-            float alpha = Random.Range(0.03f, 0.10f);
+            float alpha = Random.Range(0.03f, 0.12f);
 
             Image ola = CrearImagenAnclada(raiz, "Ola",
-                new Color(0.58f, 0.64f, 0.72f, alpha),
+                new Color(0.62f, 0.70f, 0.80f, alpha),
                 new Vector2(Random.Range(0.02f, 0.98f), Random.Range(0.02f, 0.36f)),
                 new Vector2(Random.Range(30f, 190f), Random.Range(1f, 2.5f)));
 
@@ -484,6 +501,30 @@ public class MenuInicial : MonoBehaviour
                 alpha = alpha,
                 fase = Random.Range(0f, 6.28f),
                 velocidad = Random.Range(0.6f, 1.6f)
+            });
+        }
+
+        // Destellos brillantes (más densos en primer plano)
+        for (int i = 0; i < 90; i++)
+        {
+            bool calido = Random.value < 0.25f;
+            float alpha = Random.Range(0.18f, 0.50f);
+
+            Color c = calido
+                ? new Color(1f, 0.85f, 0.55f, alpha)
+                : new Color(0.85f, 0.92f, 1f, alpha);
+
+            Image d = CrearImagenAnclada(raiz, "Destello", c,
+                new Vector2(Random.Range(0.0f, 1.0f), Random.Range(0.01f, 0.30f)),
+                new Vector2(Random.Range(2f, 9f), Random.Range(1f, 2.2f)));
+
+            olas.Add(new Onda
+            {
+                rect = d.rectTransform,
+                imagen = d,
+                alpha = alpha,
+                fase = Random.Range(0f, 6.28f),
+                velocidad = Random.Range(1.5f, 4f)
             });
         }
     }
@@ -525,33 +566,58 @@ public class MenuInicial : MonoBehaviour
         faroRoot.anchorMax = new Vector2(0.5f, 0.40f);
         faroRoot.sizeDelta = Vector2.zero;
         faroRoot.anchoredPosition = Vector2.zero;
-        faroRoot.localScale = Vector3.one * 1.4f;
+        faroRoot.localScale = Vector3.one * escalaFaro;
 
         Vector2 centro = new Vector2(0.5f, 0.5f);
 
-        // Rocas
-        Elemento(faroRoot, "Rocas", spCirculo,
-            new Color(0.020f, 0.039f, 0.078f), new Vector2(0f, -40f), new Vector2(240f, 60f));
+        Color rojo = new Color(0.38f, 0.07f, 0.08f);
+        Color blanco = new Color(0.58f, 0.63f, 0.72f);
+        Color oscuro = new Color(0.02f, 0.04f, 0.08f);
+        Color baranda = new Color(0.80f, 0.62f, 0.22f, 0.9f);
+
+        // Espuma, isla y rocas
+        Elemento(faroRoot, "Espuma", spCirculo,
+            new Color(0.75f, 0.85f, 0.95f, 0.10f), new Vector2(0f, -46f), new Vector2(360f, 70f));
+
+        Elemento(faroRoot, "Isla", spCirculo,
+            new Color(0.11f, 0.09f, 0.06f), new Vector2(0f, -42f), new Vector2(300f, 54f));
+
+        Elemento(faroRoot, "Roca1", spCirculo,
+            new Color(0.04f, 0.05f, 0.07f), new Vector2(-62f, -30f), new Vector2(34f, 20f));
+        Elemento(faroRoot, "Roca2", spCirculo,
+            new Color(0.04f, 0.05f, 0.07f), new Vector2(-98f, -40f), new Vector2(26f, 14f));
+        Elemento(faroRoot, "Roca3", spCirculo,
+            new Color(0.04f, 0.05f, 0.07f), new Vector2(92f, -44f), new Vector2(30f, 14f));
+
+        // Pedestal
+        Poligono(faroRoot, "Pedestal", new Color(0.04f, 0.07f, 0.12f),
+            new Vector2(0f, -36f), new Vector2(84f, 18f), new Vector2(0.5f, 0f),
+            new Vector2(0f, 0f), new Vector2(1f, 0f),
+            new Vector2(0.9f, 1f), new Vector2(0.1f, 1f));
 
         // Casita
         Elemento(faroRoot, "Casa", null,
-            new Color(0.039f, 0.071f, 0.125f), new Vector2(37.5f, -9.5f), new Vector2(45f, 35f));
+            new Color(0.03f, 0.05f, 0.09f), new Vector2(60f, -17f), new Vector2(52f, 36f));
 
-        Poligono(faroRoot, "TechoCasa", new Color(0.067f, 0.110f, 0.188f),
-            new Vector2(37.5f, 17f), new Vector2(55f, 18f), centro,
-            new Vector2(0f, 0f), new Vector2(1f, 0f), new Vector2(0.5f, 1f));
+        Poligono(faroRoot, "TechoCasa", new Color(0.38f, 0.07f, 0.08f),
+            new Vector2(60f, 0f), new Vector2(66f, 22f), new Vector2(0.5f, 0f),
+            new Vector2(0f, 0f), new Vector2(1f, 0f),
+            new Vector2(0.8f, 1f), new Vector2(0.2f, 1f));
+
+        Elemento(faroRoot, "Chimenea", null,
+            new Color(0.10f, 0.11f, 0.14f), new Vector2(74f, 20f), new Vector2(6f, 10f));
 
         ventanaGlow = Elemento(faroRoot, "VentanaResplandor", spRadial,
-            new Color(0.92f, 0.70f, 0.03f, 0.35f), new Vector2(34.5f, -5f), new Vector2(55f, 55f));
+            new Color(0.95f, 0.72f, 0.10f, 0.35f), new Vector2(52f, -15f), new Vector2(60f, 60f));
 
         Elemento(faroRoot, "VentanaCasa", null,
-            new Color(0.92f, 0.70f, 0.03f, 1f), new Vector2(34.5f, -5f), new Vector2(9f, 10f));
+            new Color(0.95f, 0.80f, 0.25f, 1f), new Vector2(52f, -15f), new Vector2(9f, 10f));
 
-        // Torre a franjas
-        const int franjas = 5;
-        const float baseW = 42f;
-        const float topW = 24f;
-        const float torreH = 135f;
+        // Torre a franjas (abajo rojo, arriba blanco)
+        const int franjas = 6;
+        const float baseW = 54f;
+        const float topW = 34f;
+        const float torreH = 140f;
         float altoFranja = torreH / franjas;
 
         for (int i = 0; i < franjas; i++)
@@ -560,9 +626,7 @@ public class MenuInicial : MonoBehaviour
             float w2 = baseW - (baseW - topW) * ((i + 1) / (float)franjas);
             float inset = (w1 - w2) / (2f * w1);
 
-            Color c = (i % 2 == 0)
-                ? new Color(0.345f, 0.110f, 0.090f)
-                : new Color(0.510f, 0.570f, 0.660f);
+            Color c = (i % 2 == 0) ? rojo : blanco;
 
             Poligono(faroRoot, "Franja" + i, c,
                 new Vector2(0f, -20f + i * altoFranja),
@@ -572,57 +636,73 @@ public class MenuInicial : MonoBehaviour
                 new Vector2(1f - inset, 1f), new Vector2(inset, 1f));
         }
 
+        // Ventana de la torre
+        Elemento(faroRoot, "VentanaTorre", null,
+            new Color(0.01f, 0.02f, 0.04f), new Vector2(3f, 80f), new Vector2(7f, 12f));
+
         // Sombra del lado derecho de la torre
         Poligono(faroRoot, "SombraTorre", new Color(0.02f, 0.04f, 0.07f, 0.40f),
-            new Vector2(0f, -20f), new Vector2(21f, torreH), new Vector2(0f, 0f),
+            new Vector2(0f, -20f), new Vector2(baseW * 0.5f, torreH), new Vector2(0f, 0f),
             new Vector2(0f, 0f), new Vector2(1f, 0f),
-            new Vector2(0.571f, 1f), new Vector2(0f, 1f));
+            new Vector2(topW / baseW, 1f), new Vector2(0f, 1f));
 
-        // Galería
+        // Galería (plataforma)
         Elemento(faroRoot, "Galeria", null,
-            new Color(0.07f, 0.11f, 0.19f), new Vector2(0f, 117f), new Vector2(36f, 5f));
+            new Color(0.05f, 0.08f, 0.14f), new Vector2(0f, 122f), new Vector2(52f, 6f));
 
         // Resplandor y cristal de la linterna
         luzLinterna = Elemento(faroRoot, "LinternaResplandor", spRadial,
-            new Color(1f, 0.85f, 0.40f, 0.50f), new Vector2(0f, 125f), new Vector2(170f, 170f));
+            new Color(1f, 0.85f, 0.40f, 0.50f), new Vector2(0f, 138f), new Vector2(280f, 280f));
 
         Elemento(faroRoot, "Linterna", null,
-            new Color(0.996f, 0.941f, 0.541f), new Vector2(0f, 125f), new Vector2(20f, 20f));
+            new Color(0.996f, 0.941f, 0.541f), new Vector2(0f, 138f), new Vector2(24f, 24f));
 
-        // Cúpula
-        Vector2[] domo = new Vector2[13];
+        Color marco = new Color(0.15f, 0.12f, 0.08f);
+        Elemento(faroRoot, "MarcoIzq", null, marco, new Vector2(-8f, 138f), new Vector2(1.6f, 24f));
+        Elemento(faroRoot, "MarcoCen", null, marco, new Vector2(0f, 138f), new Vector2(1.6f, 24f));
+        Elemento(faroRoot, "MarcoDer", null, marco, new Vector2(8f, 138f), new Vector2(1.6f, 24f));
+
+        // Baranda dorada
+        Elemento(faroRoot, "BarandaSup", null, baranda, new Vector2(0f, 135f), new Vector2(50f, 1.4f));
 
         for (int k = 0; k <= 12; k++)
         {
-            float a = Mathf.PI * k / 12f;
-            domo[k] = new Vector2(0.5f + 0.5f * Mathf.Cos(a), Mathf.Sin(a));
+            Elemento(faroRoot, "Baranda", null, baranda,
+                new Vector2(-24f + k * 4f, 130f), new Vector2(1f, 10f));
         }
 
-        Poligono(faroRoot, "Cupula", new Color(0.027f, 0.051f, 0.094f),
-            new Vector2(0f, 135f), new Vector2(26f, 13f), new Vector2(0.5f, 0f), domo);
+        // Techo rojo con aro y pararrayos
+        Poligono(faroRoot, "Techo", rojo,
+            new Vector2(0f, 149f), new Vector2(34f, 20f), new Vector2(0.5f, 0f),
+            new Vector2(0f, 0f), new Vector2(1f, 0f),
+            new Vector2(0.66f, 1f), new Vector2(0.34f, 1f));
 
-        // Haces de luz
-        Color colorHaz = new Color(1f, 0.92f, 0.55f, 0.55f);
+        Elemento(faroRoot, "AroTecho", null,
+            new Color(0.90f, 0.38f, 0.16f), new Vector2(0f, 149.5f), new Vector2(36f, 1.8f));
 
-        haz1 = Elemento(faroRoot, "Haz1", spHaz, colorHaz,
-            new Vector2(0f, 125f), new Vector2(900f, 2000f), new Vector2(0.5f, 0f)).rectTransform;
+        Elemento(faroRoot, "Bola", spCirculo, oscuro, new Vector2(0f, 170f), new Vector2(5f, 5f));
 
-        haz2 = Elemento(faroRoot, "Haz2", spHaz, colorHaz,
-            new Vector2(0f, 125f), new Vector2(900f, 2000f), new Vector2(0.5f, 0f)).rectTransform;
+        Elemento(faroRoot, "Pararrayos", null, oscuro,
+            new Vector2(0f, 172f), new Vector2(1.2f, 14f), new Vector2(0.5f, 0f));
 
-        // Escala de los haces
-        haz1.localScale = new Vector3(2.862463f, 0.02416191f, 1f);
-        haz2.localScale = new Vector3(2.862463f, 0.02416191f, 1f);
+        // Haces de luz (conos largos y suaves)
+        Color colorHaz = new Color(1f, 0.93f, 0.60f, 0.38f);
+
+        Image iHaz1 = Elemento(faroRoot, "Haz1", spRadial, colorHaz,
+            new Vector2(0f, 138f), new Vector2(900f, 16f), new Vector2(0.5f, 0.5f));
+        haz1 = iHaz1.rectTransform;
+        imgHaz1 = iHaz1;
     }
 
     private void AnimarHaz()
     {
         anguloHaz += velocidadHaz * Time.unscaledDeltaTime;
 
-        float grados = -(anguloHaz + Mathf.PI * 0.5f) * Mathf.Rad2Deg;
+        float grados = -anguloHaz * Mathf.Rad2Deg;
+        float pulso = 0.94f + 0.06f * Mathf.Sin(tiempo * 3f);
 
         haz1.localRotation = Quaternion.Euler(0f, 0f, grados);
-        haz2.localRotation = Quaternion.Euler(0f, 0f, grados + 180f);
+        haz1.localScale = new Vector3(1f, pulso, 1f);
     }
 
     private void AnimarLinterna()
@@ -703,7 +783,7 @@ public class MenuInicial : MonoBehaviour
 
     private void CrearScanlines()
     {
-        lineas = CrearRawImagen("Scanlines", texLineas, new Color(1f, 1f, 1f, 0.6f));
+        lineas = CrearRawImagen("Scanlines", texLineas, new Color(1f, 1f, 1f, 0.35f));
     }
 
     private void AnimarGrano(float dt)
@@ -762,50 +842,70 @@ public class MenuInicial : MonoBehaviour
             new Vector2(0.215f, 0.955f), new Vector2(380f, 30f));
 
         // Cabecera derecha
-        CrearBotonRadio();
-
         CrearTexto(raiz, "12 NOV 1940  ·  03:14 AM", 11, FontStyle.Normal, apagado,
             new Vector2(0.925f, 0.955f), new Vector2(230f, 30f));
 
-        CrearTitulo();
+        CrearIndicadorLateral();
         CrearBotones();
+        CrearBotonesSonido();
 
-        CrearTexto(raiz, "HORROR CÓSMICO ANALÓGICO  ·  CAPÍTULO I", 11, FontStyle.Normal,
+        // Lema
+        CrearTexto(raiz, "No todo lo que desaparece deja de estar presente", 16,
+            FontStyle.Italic, new Color(0.80f, 0.84f, 0.89f, 0.85f),
+            new Vector2(0.5f, 0.170f), new Vector2(1000f, 34f));
+
+        // Pie
+        CrearTexto(raiz,
+            "HORROR CÓSMICO ANALÓGICO  ·  CAPÍTULO I  ·  TECLADO / MOUSE  ·  ~15 MIN",
+            10, FontStyle.Normal,
             new Color(0.50f, 0.58f, 0.67f, 0.9f),
-            new Vector2(0.5f, 0.085f), new Vector2(700f, 28f));
+            new Vector2(0.5f, 0.032f), new Vector2(900f, 25f));
+    }
 
-        CrearTexto(raiz, "TECLADO / MOUSE  |  TIEMPO ESTIMADO ~ 15 MIN", 10, FontStyle.Normal,
-            new Color(0.43f, 0.50f, 0.60f, 0.9f),
-            new Vector2(0.5f, 0.035f), new Vector2(700f, 25f));
+    private void CrearIndicadorLateral()
+    {
+        Vector2 ancla = new Vector2(0.965f, 0.5f);
+
+        CrearImagenAnclada(raiz, "IndicadorLinea",
+            new Color(0.80f, 0.84f, 0.89f, 0.18f), ancla, new Vector2(1f, 300f));
+
+        for (int i = 0; i < 6; i++)
+        {
+            bool activo = i == 0;
+
+            Image p = CrearImagenAnclada(raiz, "IndicadorPunto",
+                activo ? dorado : new Color(0.80f, 0.84f, 0.89f, 0.45f),
+                ancla, Vector2.one * (activo ? 11f : 8f));
+
+            p.sprite = spCirculo;
+            p.rectTransform.anchoredPosition = new Vector2(0f, 150f - i * 60f);
+        }
     }
 
     private void CrearTitulo()
     {
         Image glow = CrearImagenAnclada(raiz, "TituloResplandor",
-            new Color(0.90f, 0.76f, 0.35f, 0.07f),
-            new Vector2(0.5f, 0.735f), new Vector2(1100f, 380f));
+            new Color(0.90f, 0.76f, 0.35f, 0.08f),
+            new Vector2(0.5f, 0.78f), new Vector2(1600f, 560f));
         glow.sprite = spRadial;
 
-        Text titulo = CrearTexto(raiz, "Vestigia", 150, FontStyle.Italic, dorado,
-            new Vector2(0.5f, 0.735f), new Vector2(1100f, 230f),
+        Text titulo = CrearTexto(raiz, "Vestigia", tamanoTitulo, FontStyle.Italic,
+            new Color(0.86f, 0.74f, 0.20f, 0.90f),
+            new Vector2(0.5f, 0.78f), new Vector2(2000f, 520f),
             TextAnchor.MiddleCenter, fuenteTitulo);
 
         Shadow sombra = titulo.gameObject.AddComponent<Shadow>();
-        sombra.effectColor = new Color(0f, 0f, 0f, 0.9f);
+        sombra.effectColor = new Color(0f, 0f, 0f, 0.6f);
         sombra.effectDistance = new Vector2(0f, -8f);
-
-        CrearTexto(raiz, "No todo lo que desaparece deja de estar presente", 15,
-            FontStyle.Normal, new Color(0.80f, 0.84f, 0.89f, 0.85f),
-            new Vector2(0.5f, 0.650f), new Vector2(1000f, 34f));
     }
 
     private void CrearBotones()
     {
         infoIniciar = CrearBotonRetro("BotonIniciar", "INICIAR PARTIDA",
-            new Vector2(0.5f, 0.220f), new Vector2(440f, 60f), true, null);
+            new Vector2(0.375f, 0.090f), new Vector2(440f, 60f), true, null);
 
         infoReanudar = CrearBotonRetro("BotonReanudar", "REANUDAR PARTIDA",
-            new Vector2(0.5f, 0.145f), new Vector2(440f, 60f), false, etiquetaRegistro);
+            new Vector2(0.625f, 0.090f), new Vector2(440f, 60f), false, etiquetaRegistro);
 
         infoIniciar.boton.onClick.AddListener(
             () => CargarEscena(escenaSalas, "Sintonizando prólogo..."));
@@ -867,28 +967,52 @@ public class MenuInicial : MonoBehaviour
         return b;
     }
 
-    private void CrearBotonRadio()
+    private void CrearBotonesSonido()
     {
-        infoRadio = CrearBotonBase(
-            "RadioToggle",
-            new Vector2(0.790f, 0.955f), new Vector2(250f, 34f),
+        infoRadio = CrearBotonSonido("RadioToggle", new Vector2(0.115f, 0.050f),
+            "SEÑAL RADIO: OFF", out lamparaRadio, out textoRadio);
+
+        infoRadio.boton.onClick.AddListener(ToggleRadio);
+
+        if (cancionFondo != null)
+        {
+            infoMusica = CrearBotonSonido("MusicaToggle", new Vector2(0.115f, 0.100f),
+                musicaActiva ? "MÚSICA: ON" : "MÚSICA: OFF",
+                out lamparaMusica, out textoMusica);
+
+            textoMusica.color = musicaActiva ? dorado : colorTexto;
+            infoMusica.colorEtiqueta = musicaActiva ? dorado : colorTexto;
+            infoMusica.boton.onClick.AddListener(ToggleMusica);
+        }
+    }
+
+    private BotonUI CrearBotonSonido(
+        string nombre,
+        Vector2 anclaje,
+        string texto,
+        out Image lampara,
+        out Text etiqueta)
+    {
+        BotonUI info = CrearBotonBase(
+            nombre, anclaje, new Vector2(250f, 34f),
             new Color(0.03f, 0.05f, 0.09f, 0.85f),
             new Color(0.40f, 0.47f, 0.58f, 0.30f),
             colorTexto);
 
-        Transform t = infoRadio.boton.transform;
+        Transform t = info.boton.transform;
 
-        lamparaRadio = Elemento(t, "Lampara", spCirculo,
+        lampara = Elemento(t, "Lampara", spCirculo,
             new Color(0.40f, 0.47f, 0.58f, 1f), new Vector2(-100f, 0f), new Vector2(9f, 9f));
 
-        textoRadio = CrearTexto(t, "SEÑAL RADIO: OFF", 12, FontStyle.Normal, colorTexto,
+        etiqueta = CrearTexto(t, texto, 12, FontStyle.Normal, colorTexto,
             new Vector2(0.5f, 0.5f), new Vector2(200f, 34f));
-        textoRadio.rectTransform.anchoredPosition = new Vector2(10f, 0f);
+        etiqueta.rectTransform.anchoredPosition = new Vector2(10f, 0f);
 
-        infoRadio.etiqueta = textoRadio;
-        infoRadio.boton.onClick.AddListener(ToggleRadio);
+        info.etiqueta = etiqueta;
 
-        AgregarEventosHover(infoRadio, 0f);
+        AgregarEventosHover(info, 0f);
+
+        return info;
     }
 
     private BotonUI CrearBotonBase(
@@ -1050,6 +1174,7 @@ public class MenuInicial : MonoBehaviour
 
     private void PrepararAudio()
     {
+        // Ambiente (viento / estática)
         if (audioAmbiente == null)
         {
             audioAmbiente = gameObject.AddComponent<AudioSource>();
@@ -1061,6 +1186,21 @@ public class MenuInicial : MonoBehaviour
         audioAmbiente.volume = 0f;
         audioAmbiente.Stop();
 
+        // Canción de fondo
+        if (cancionFondo != null)
+        {
+            musica = gameObject.AddComponent<AudioSource>();
+            musica.clip = cancionFondo;
+            musica.playOnAwake = false;
+            musica.loop = true;
+            musica.spatialBlend = 0f;
+            musica.volume = 0f;
+            musica.Play();
+
+            volumenMusicaObjetivo = musicaActiva ? volumenCancion : 0f;
+        }
+
+        // Efectos
         sfx = gameObject.AddComponent<AudioSource>();
         sfx.playOnAwake = false;
         sfx.volume = 0.6f;
@@ -1071,26 +1211,40 @@ public class MenuInicial : MonoBehaviour
 
     private void AnimarAudio(float dt)
     {
-        if (audioAmbiente == null)
+        if (audioAmbiente != null)
+        {
+            audioAmbiente.volume = Mathf.MoveTowards(
+                audioAmbiente.volume, volumenObjetivo, dt * 0.15f);
+
+            if (!sonidoActivo && audioAmbiente.isPlaying && audioAmbiente.volume <= 0.001f)
+                audioAmbiente.Stop();
+        }
+
+        if (musica != null)
+        {
+            float velocidad = Mathf.Max(volumenCancion, 0.01f) / fundidoCancion;
+
+            musica.volume = Mathf.MoveTowards(
+                musica.volume, volumenMusicaObjetivo, dt * velocidad);
+        }
+
+        ActualizarLampara(lamparaRadio, sonidoActivo);
+        ActualizarLampara(lamparaMusica, musicaActiva);
+    }
+
+    private void ActualizarLampara(Image lampara, bool activa)
+    {
+        if (lampara == null)
             return;
 
-        audioAmbiente.volume = Mathf.MoveTowards(
-            audioAmbiente.volume, volumenObjetivo, dt * 0.15f);
-
-        if (!sonidoActivo && audioAmbiente.isPlaying && audioAmbiente.volume <= 0.001f)
-            audioAmbiente.Stop();
-
-        if (lamparaRadio != null)
+        if (activa)
         {
-            if (sonidoActivo)
-            {
-                float p = 0.65f + 0.35f * Mathf.Sin(tiempo * 5f);
-                lamparaRadio.color = new Color(dorado.r, dorado.g, dorado.b, p);
-            }
-            else
-            {
-                lamparaRadio.color = new Color(0.40f, 0.47f, 0.58f, 1f);
-            }
+            float p = 0.65f + 0.35f * Mathf.Sin(tiempo * 5f);
+            lampara.color = new Color(dorado.r, dorado.g, dorado.b, p);
+        }
+        else
+        {
+            lampara.color = new Color(0.40f, 0.47f, 0.58f, 1f);
         }
     }
 
@@ -1111,6 +1265,27 @@ public class MenuInicial : MonoBehaviour
 
         if (infoRadio != null)
             infoRadio.colorEtiqueta = sonidoActivo ? dorado : colorTexto;
+
+        ReproducirSfx(clipClick);
+    }
+
+    private void ToggleMusica()
+    {
+        musicaActiva = !musicaActiva;
+
+        volumenMusicaObjetivo = musicaActiva ? volumenCancion : 0f;
+
+        if (musica != null && !musica.isPlaying)
+            musica.Play();
+
+        if (textoMusica != null)
+        {
+            textoMusica.text = musicaActiva ? "MÚSICA: ON" : "MÚSICA: OFF";
+            textoMusica.color = musicaActiva ? dorado : colorTexto;
+        }
+
+        if (infoMusica != null)
+            infoMusica.colorEtiqueta = musicaActiva ? dorado : colorTexto;
 
         ReproducirSfx(clipClick);
     }
@@ -1538,12 +1713,12 @@ public class MenuInicial : MonoBehaviour
 
                 float a;
 
-                if (d < 0.35f)
+                if (d < 0.45f)
                     a = 0f;
-                else if (d < 0.75f)
-                    a = Mathf.Lerp(0f, 0.75f, (d - 0.35f) / 0.40f);
+                else if (d < 0.80f)
+                    a = Mathf.Lerp(0f, 0.35f, (d - 0.45f) / 0.35f);
                 else
-                    a = Mathf.Lerp(0.75f, 0.98f, (d - 0.75f) / 0.25f);
+                    a = Mathf.Lerp(0.35f, 0.75f, (d - 0.80f) / 0.20f);
 
                 px[y * res + x] = new Color(0.008f, 0.016f, 0.035f, a);
             }
@@ -1555,7 +1730,7 @@ public class MenuInicial : MonoBehaviour
 
     private Sprite CrearSpritePoligono(Vector2[] puntos)
     {
-        const int res = 64;
+        const int res = 128;
 
         Texture2D textura = new Texture2D(res, res, TextureFormat.RGBA32, false);
         Color32[] px = new Color32[res * res];
@@ -1638,7 +1813,14 @@ public class MenuInicial : MonoBehaviour
         infoReanudar.boton.interactable = false;
         infoRadio.boton.interactable = false;
 
+        if (infoMusica != null)
+            infoMusica.boton.interactable = false;
+
         ReproducirSfx(clipClick);
+
+        // La música y el ambiente se apagan mientras carga
+        volumenObjetivo = 0f;
+        volumenMusicaObjetivo = 0f;
 
         GameObject cortina = new GameObject("CortinaCarga",
             typeof(RectTransform), typeof(Image), typeof(CanvasGroup));
